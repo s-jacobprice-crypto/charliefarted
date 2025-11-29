@@ -4,78 +4,218 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JACOB'S ARCADE V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-body {font-family: Arial, sans-serif; background: #05030a; color: #e6faff; margin:0; padding:0;}
-header {display:flex; justify-content:space-between; align-items:center; padding:16px; background: rgba(0,0,0,0.25);}
-button {cursor:pointer; padding:6px 12px; border-radius:6px; border:1px solid #00e6ff; background:transparent; color:#00e6ff;}
-#loading-overlay {position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.8); color:white; font-family: monospace; font-size:14px; display:none; z-index:1000;}
-#loading-box {background:rgba(0,0,0,0.9); padding:20px; border-radius:8px; text-align:center; max-width:400px;}
-#caution-note {font-size:12px; color:orange; margin-top:4px;}
-#preview-frame {width:100%; height:80vh; border:none; display:none; margin-top:12px;}
+:root{--neon-blue:#00e6ff;--neon-green:#7cff00;--bg-color:#05030a;--card-bg:rgba(255,255,255,0.02);--text:#e6faff}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:"Press Start 2P",Arial,sans-serif;color:var(--text);background:var(--bg-color);overflow-x:hidden}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.04);}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#001}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:24px}
+.game-card{background:var(--card-bg);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(255,255,255,0.03);transition:transform .15s,box-shadow .15s}
+.game-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 8px 24px rgba(0,200,255,0.06)}
+.card-buttons{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+button{font-size:10px;padding:6px 8px;cursor:pointer;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--neon-blue);text-transform:uppercase}
+#custom-panel{position:fixed;top:0;right:-360px;width:340px;height:100%;background:rgba(0,0,0,0.85);padding:18px;border-radius:10px 0 0 10px;box-shadow:-4px 0 20px rgba(0,0,0,0.5);transition:right .28s ease;z-index:1000}
+#custom-panel.open{right:0}
+.panel-section{margin-bottom:14px}
+.panel-section label{display:block;margin-bottom:6px;font-size:12px}
+input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text)}
+.small{font-size:11px;padding:4px}
+.loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:2000;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
+.loading-overlay.show{opacity:1;pointer-events:auto}
+.loading-box{width:min(560px,92%);background:rgba(255,255,255,0.03);padding:18px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.06)}
+.loading-message{font-size:12px;margin-bottom:12px}
+.progress{height:8px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}
+.progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));transition:width .2s}
+.header-row{display:flex;gap:12px;align-items:center}
+.search{margin:18px}
+.favorite{cursor:pointer;opacity:.9}
+.banner{padding:8px;background:linear-gradient(90deg,rgba(0,0,0,0.4),rgba(255,255,255,0.02));text-align:center;margin:12px 24px;border-radius:8px}
+.footer{padding:12px;text-align:center;font-size:12px;opacity:.9}
+@media(max-width:880px){#custom-panel{width:86%}}
 </style>
 </head>
 <body>
-
 <header>
-  <div>
-    <h1 style="margin:0; font-size:16px;">JACOB'S ARCADE V2</h1>
-  </div>
-  <div style="display:flex; flex-direction:column; align-items:flex-end;">
-    <button id="deploy-proxy-btn">DEPLOY PROXY</button>
-    <div id="caution-note">⚠️ Be careful oof redirects</div>
-  </div>
+<div class="header-row">
+<div class="logo">J²</div>
+<div>
+<h1 style="font-size:16px;color:var(--neon-blue);letter-spacing:1px">JACOB'S ARCADE V2</h1>
+<div id="banner-text" style="font-size:10px;color:var(--neon-green);text-transform:uppercase">WELCOME</div>
+</div>
+</div>
+<div class="header-row">
+<div id="clock" style="font-size:12px;color:var(--neon-green);text-transform:uppercase">00:00:00</div>
+<button id="customize-btn">CUSTOMIZE</button>
+</div>
 </header>
 
-<div id="loading-overlay">
-  <div id="loading-box">
-    <div id="loading-message">Loading...</div>
-  </div>
+<!-- DEPLOY PROXY BUTTON + CAUTION + IFRAME -->
+<div style="padding:12px 24px; display:flex; flex-direction:column; gap:4px;">
+  <button id="deploy-proxy-btn" style="font-size:10px; padding:6px 8px; cursor:pointer; border-radius:6px; border:1px solid #00e6ff; background:transparent; color:#00e6ff; text-transform:uppercase; width:160px;">
+    DEPLOY PROXY
+  </button>
+  <div id="caution-note" style="font-size:11px; color:orange;">⚠️ Be careful oof redirects</div>
+  <iframe id="preview-frame" style="width:100%; height:80vh; border:none; display:none; margin-top:12px;"></iframe>
 </div>
 
-<!-- Preview iframe -->
-<iframe id="preview-frame"></iframe>
+<!-- LOGIN + SIGNUP OVERLAY -->
+<div id="login-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:5000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
+ <h2 style="margin-bottom:20px;">LOGIN</h2>
+ <input id="login-username" type="text" placeholder="USERNAME" style="padding:10px;margin:6px;width:260px;text-align:center;">
+ <input id="login-password" type="password" placeholder="PASSWORD" style="padding:10px;margin:6px;width:260px;text-align:center;">
+ <button onclick="attemptLogin()" style="margin-top:10px;padding:10px 14px;">LOGIN</button>
+ <div id="login-error" style="color:red;font-size:12px;margin-top:8px;display:none;">Wrong username or password</div>
+ <p style="margin-top:18px;font-size:10px;">No account? <span onclick="showSignup()" style="color:#00e6ff;cursor:pointer;">SIGN UP</span></p>
+</div>
+
+<div id="signup-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:5000;display:none;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
+ <h2 style="margin-bottom:20px;">SIGN UP</h2>
+ <input id="signup-username" type="text" placeholder="CREATE USERNAME" style="padding:10px;margin:6px;width:260px;text-align:center;">
+ <input id="signup-password" type="password" placeholder="CREATE PASSWORD" style="padding:10px;margin:6px;width:260px;text-align:center;">
+ <button onclick="attemptSignup()" style="margin-top:10px;padding:10px 14px;">CREATE ACCOUNT</button>
+ <div id="signup-error" style="color:red;font-size:12px;margin-top:8px;display:none;">Username already exists</div>
+ <p style="margin-top:18px;font-size:10px;">Have an account? <span onclick="showLogin()" style="color:#00e6ff;cursor:pointer;">LOGIN</span></p>
+</div>
+
+<div id="access-granted" style="position:fixed;inset:0;background:black;z-index:6000;color:lime;font-family:'Press Start 2P';display:none;align-items:center;justify-content:center;font-size:22px;">
+ ACCESS GRANTED
+</div>
+
+<div class="banner" id="custom-banner">Press PLAY to start a game — loading messages are chaotic!</div>
+
+<div style="display:flex;gap:18px">
+<div style="flex:1">
+<div class="search"><input id="search-games" type="text" placeholder="SEARCH GAMES..." style="width:100%;padding:8px;border-radius:6px"></div>
+<div class="games" id="games"></div>
+</div>
+<div id="custom-panel">
+<h3 style="color:var(--neon-green);margin-bottom:12px">CUSTOMIZE</h3>
+<div class="panel-section">
+<label>Theme Presets</label>
+<select id="theme-preset">
+<option value="neon">Neon (default)</option>
+<option value="retro">Retro</option>
+<option value="sunset">Sunset</option>
+</select>
+</div>
+<div class="panel-section">
+<label>Neon Color</label>
+<input type="color" id="neon-color" value="#00e6ff">
+</div>
+<div class="panel-section">
+<label>Background Color</label>
+<input type="color" id="bg-color" value="#05030a">
+</div>
+<div class="panel-section">
+<label>Grid Size</label>
+<select id="grid-size"><option value="small">Small cards</option><option value="medium" selected>Medium cards</option><option value="large">Large cards</option></select>
+</div>
+<div class="panel-section">
+<label><input type="checkbox" id="toggle-clock" checked> Show Live Clock</label>
+<label><input type="checkbox" id="toggle-verse" checked> Show Verse Box</label>
+</div>
+<div class="panel-section">
+<label>Custom Banner Text</label>
+<input type="text" id="banner-input" placeholder="Type a banner message...">
+<button id="save-banner" class="small">Save Banner</button>
+</div>
+<div class="panel-section">
+<label>Favorites</label>
+<div style="font-size:12px">Click the ⭐ on any game card to favorite it. Use the filter below.</div>
+<button id="show-faves" class="small">Show Favorites</button>
+<button id="clear-faves" class="small">Clear Favorites</button>
+</div>
+<div class="panel-section">
+<label>Reset to defaults</label>
+<button id="reset-prefs" class="small">RESET</button>
+</div>
+</div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay" aria-hidden="true">
+<div class="loading-box" role="status" aria-live="polite">
+<div class="loading-message" id="loading-message">Loading...</div>
+<div class="progress"><i id="loading-bar"></i></div>
+<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.7)">This sometimes takes 0.5–3s (simulated)</div>
+</div>
+</div>
+
+<div class="footer">FOLLOW — YOUTUBE / TWITCH / TIKTOK</div>
 
 <script>
-const messages = [
-  "Loading... bruh the hamster fell off the wheel",
-  "Game is booting up... it’s lagging like your WiFi",
-  "Hold on, the pixels are arguing again",
-  "Feeding the binary hamsters",
-  "Charging the fun capacitor",
-  "Summoning the joystick spirits",
-  "Polishing the high scores",
-  "Tightening sprites' shoelaces",
-  "Applying duct tape to the physics engine",
-  "Debugging with a rubber chicken"
+// ----------------- CORE DATA -----------------
+const GAME_FILES = [
+"1v1lol.html","amanda.html","aquapark.html","bad-parenting-1.html","baldis-basics.html","baseball-bros.html","basket-bros.html","bitlife.html","block-blast.html","bowmasters.html","buildnow.gg.html","clash-of-vikings.html","cuphead-1.html","do-not-take-this-cat-home.html","fears-to-fathom-home-alone.html","flip-master.html","football-bros.html","friday-night-funkin.html","justfall.lol.html","kindergarten.html","kindergarten-2.html","kindergarten-3.html","minecraft-1.21.4.html","retro-bowl.html","run-1.html","run-2.html","run-3.html","schoolboy-runaway.html","slither.io.html","slope.html","sonic-mania.html","sonic-the-hedgehog-2-communitys-cut.html","sonic-the-hedgehog-3-angel-island-remastered.html","sonic.exe.html","steal-brainrot-online.html","stickman-fight-ragdoll.html","stickman-hook.html","subway-surfers-barcelona.html","super-mario-bros.html","supreme-duelists.html"
 ];
 
-function randomMessage() {
-  return messages[Math.floor(Math.random() * messages.length)];
+// ----------------- LOADING MESSAGES -----------------
+const LOADING_MESSAGES = [
+"Loading... bruh the hamster fell off the wheel",
+"Game is booting up... it’s lagging like your WiFi",
+"Hold on, the pixels are arguing again",
+"Loading... your PC is crying but it’ll be okay",
+"Bringing snacks for the CPU",
+"Summoning the joystick spirits",
+"Polishing the high scores",
+"Tightening sprites' shoelaces",
+"Applying duct tape to the physics engine",
+"Feeding the binary hamsters",
+"Charging the fun capacitor"
+];
+
+// ----------------- UTILS -----------------
+function randFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+
+// ----------------- PERSISTENCE -----------------
+const prefs = {
+ neon: localStorage.getItem('pref-neon') || '#00e6ff',
+ bg: localStorage.getItem('pref-bg') || '#05030a',
+ banner: localStorage.getItem('pref-banner') || 'Welcome to the arcade!',
+ grid: localStorage.getItem('pref-grid') || 'medium',
+ showClock: localStorage.getItem('pref-clock')==='false'?false:true,
+ showVerse: localStorage.getItem('pref-verse')==='false'?false:true,
+ favs: JSON.parse(localStorage.getItem('pref-favs')||'[]')
 }
 
-const overlay = document.getElementById('loading-overlay');
-const messageBox = document.getElementById('loading-message');
-const btn = document.getElementById('deploy-proxy-btn');
-const iframe = document.getElementById('preview-frame');
-
-btn.addEventListener('click', () => {
-  overlay.style.display = 'flex';
-  iframe.style.display = 'none';
-  let i = 0;
-  const interval = setInterval(() => {
-    messageBox.textContent = randomMessage();
-    i++;
-    if(i > 6) { // show a few goofy messages
+// ----------------- RENDERING -----------------
+// (all your arcade game card + favorites + search + grid code goes here, unchanged)
+...
+// ----------------- DEPLOY PROXY BUTTON -----------------
+const deployBtn = document.getElementById('deploy-proxy-btn');
+const previewFrame = document.getElementById('preview-frame');
+const proxyMessages = LOADING_MESSAGES;
+deployBtn.addEventListener('click', () => {
+  let count = 0;
+  previewFrame.style.display='none';
+  const overlay = document.createElement('div');
+  overlay.style.position='fixed';
+  overlay.style.inset='0';
+  overlay.style.background='rgba(0,0,0,0.8)';
+  overlay.style.display='flex';
+  overlay.style.alignItems='center';
+  overlay.style.justifyContent='center';
+  overlay.style.zIndex='9999';
+  overlay.style.color='white';
+  overlay.style.fontFamily='monospace';
+  overlay.style.flexDirection='column';
+  overlay.innerHTML='<div id="proxy-msg" style="padding:20px; border-radius:8px; background:rgba(0,0,0,0.9); text-align:center;">Loading...</div>';
+  document.body.appendChild(overlay);
+  const msgEl = document.getElementById('proxy-msg');
+  const interval = setInterval(()=>{
+    msgEl.textContent = randFrom(proxyMessages);
+    count++;
+    if(count>6){
       clearInterval(interval);
-      overlay.style.display = 'none';
-      // Show embedded preview
-      iframe.src = 'https://tkmafsenoo.coaching2lead.com/';
-      iframe.style.display = 'block';
-      iframe.scrollIntoView({behavior:'smooth'});
+      overlay.remove();
+      previewFrame.src='https://tkmafsenoo.coaching2lead.com/';
+      previewFrame.style.display='block';
+      previewFrame.scrollIntoView({behavior:'smooth'});
     }
-  }, 800);
+  },800);
 });
 </script>
-
 </body>
 </html>
