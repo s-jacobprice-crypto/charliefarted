@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JACOB'S ARCADE V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root {
+  --neon-blue:#00e6ff;
+  --neon-green:#7cff00;
+  --bg-color:#05030a;
+  --bg-opacity:0.85;
+  --verse-bg-opacity:0.02;
+  --verse-text-color:#dffcff;
+  --game-bg-opacity:0.01;
+  --game-text-color:#00e6ff;
+  --star-opacity:0.25;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:"Press Start 2P",Arial,sans-serif;color:#e6faff;background:var(--bg-color);overflow-x:hidden;}
+body::before,body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:-2;}
+body::before{background:radial-gradient(rgba(255,255,255,var(--star-opacity)) 1px,transparent 1px);background-size:2px 2px;}
+body::after{background:radial-gradient(circle at 20% 10%, rgba(0,255,200,0.06), transparent 10%),radial-gradient(circle at 80% 70%, rgba(0,150,255,0.04), transparent 10%);opacity:0.85;filter:blur(40px) saturate(120%);}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(6px);}
+header .title{display:flex;align-items:center;gap:12px;}
+header .logo{width:48px;height:48px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#001;}
+header h1{font-size:18px;color:var(--neon-blue);letter-spacing:1px;text-transform:uppercase;}
+header .live-clock{font-size:12px;color:var(--neon-green);text-transform:uppercase;}
+#customize-btn{position:fixed;top:16px;right:16px;z-index:1001;background:var(--neon-green);color:#000;font-size:12px;padding:6px 10px;border-radius:6px;cursor:pointer;border:none;box-shadow:0 0 8px var(--neon-green);}
+#customize-btn:hover{box-shadow:0 0 16px var(--neon-green);}
+main{display:flex;flex-wrap:wrap;padding:24px;gap:24px;}
+.left{flex:1 1 500px;}
+#custom-panel{position:fixed;top:0;right:-320px;width:300px;height:100%;background:rgba(0,0,0,var(--bg-opacity));padding:18px;border-radius:10px 0 0 10px;box-shadow:-4px 0 20px rgba(0,0,0,0.3);transition:right 0.3s ease;z-index:1000;}
+#custom-panel.open{right:0;}
+.clock{font-size:24px;color:var(--neon-green);margin-bottom:12px;text-transform:uppercase;}
+.next-update{font-size:10px;color:#dffcff;margin-bottom:14px;text-transform:uppercase;}
+.verse-box{background:rgba(255,255,255,var(--verse-bg-opacity));padding:16px;border-radius:8px;min-height:100px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.04);}
+.verse-text{font-size:12px;color:var(--verse-text-color);line-height:1.4;text-transform:uppercase;}
+.verse-ref{font-size:10px;color:var(--neon-blue);margin-top:8px;text-align:right;opacity:0.85;text-transform:uppercase;}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+.game-card{background:rgba(255,255,255,var(--game-bg-opacity));padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(255,255,255,0.03);transition: transform 0.15s, box-shadow 0.15s;}
+.game-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 8px 24px rgba(0,200,255,0.06);}
+.card-buttons{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
+.card-buttons button{font-size:10px;padding:4px 6px;cursor:pointer;border-radius:4px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--neon-blue);text-transform:uppercase;}
+footer{margin-top:32px;padding:18px;background:rgba(0,0,0,0.25);border-radius:8px;text-align:center;font-size:12px;color:#dffcff;text-transform:uppercase;}
+footer .socials a{margin:0 8px;color:var(--neon-blue);text-decoration:none;text-transform:uppercase;}
+.panel-section{margin-bottom:16px;}
+.panel-section label{display:block;margin-bottom:4px;font-size:12px;}
+.panel-section input[type=color]{width:100%;height:28px;border:none;border-radius:4px;}
+.panel-section input[type=checkbox]{margin-right:6px;}
+.panel-section input[type=text]{width:100%;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.2);color:#fff;font-size:12px;text-transform:uppercase;}
+@media(max-width:800px){#custom-panel{width:80%;}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="title">
+<div class="logo">J²</div>
+<h1>JACOB'S ARCADE V2</h1>
+</div>
+<div class="live-clock" id="header-clock">00:00:00</div>
+</header>
+
+<button id="customize-btn">CUSTOMIZE</button>
+
+<main>
+<div class="left">
+<div class="clock" id="live-time">00:00:00</div>
+<div class="next-update">NEXT UPDATE → <span id="next-update-time">CALCULATING...</span><br>(EVERY SATURDAY)</div>
+
+<div class="verse-box" aria-live="polite">
+<div class="verse-text" id="verse-text">LOADING VERSE…</div>
+<div class="verse-ref" id="verse-ref">—</div>
+</div>
+
+<div class="panel-section">
+<label>SEARCH GAMES</label>
+<input type="text" id="search-games" placeholder="TYPE TO SEARCH...">
+</div>
+
+<div class="games" id="games"></div>
+</div>
+
+<div id="custom-panel">
+<h3 style="color:var(--neon-green); font-size:14px; margin-bottom:12px;">CUSTOMIZE</h3>
+<!-- Add customization options here -->
+</div>
+</main>
+
+<footer>
+<div>FOLLOW ME —</div>
+<div class="socials">
+<a href="https://www.youtube.com/@jynxgotaim" target="_blank">YOUTUBE</a>
+<a href="https://www.twitch.tv/jjonzenn" target="_blank">TWITCH</a>
+<a href="https://www.tiktok.com/@fearjnyx_" target="_blank">TIKTOK</a>
+</div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+
+// CLOCK
+function pad(n){return n.toString().padStart(2,'0');}
+function updateClock(){
+const now=new Date();
+const hh=pad(now.getHours()),mm=pad(now.getMinutes()),ss=pad(now.getSeconds());
+document.getElementById('live-time').textContent=`${hh}:${mm}:${ss}`;
+document.getElementById('header-clock').textContent=`${hh}:${mm}:${ss}`;
+}
+setInterval(updateClock,200);updateClock();
+
+// NEXT UPDATE
+function nextSaturday(from=new Date()){
+const dt=new Date(from);const day=dt.getDay();
+const days=((6-day)+7)%7||7;dt.setDate(dt.getDate()+days);dt.setHours(12,0,0,0);
+return dt;
+}
+document.getElementById('next-update-time').textContent=nextSaturday().toLocaleString();
+
+// BIBLE VERSES (250+ placeholder)
+const VERSES=[
+{text:"FOR GOD SO LOVED THE WORLD THAT HE GAVE HIS ONLY SON",ref:"JOHN 3:16"},
+{text:"I CAN DO ALL THINGS THROUGH CHRIST WHO STRENGTHENS ME",ref:"PHILIPPIANS 4:13"},
+{text:"THE LORD IS MY SHEPHERD; I SHALL NOT WANT",ref:"PSALM 23:1"},
+// Add up to 250+ verses
+];
+let verseIndex=0;
+function updateVerse(){
+const v=VERSES[verseIndex];
+document.getElementById('verse-text').textContent=v.text.toUpperCase();
+document.getElementById('verse-ref').textContent=v.ref.toUpperCase();
+verseIndex=(verseIndex+1)%VERSES.length;
+}
+setInterval(updateVerse,1000);updateVerse();
+
+// GAMES with exact filenames
+const GAME_FILES=[
+"1v1.LoL.html","Amanda the Adventurer (1).html","Aquapark.io.html","Bad Parenting 1.html",
+"Baldi's Basics.html","Baseball Bros.html","Basket Bros.html","BitLife.html","Block Blast.html",
+"Bowmasters.html","BuildNow.gg.html","Clash Of Vikings.html","Cuphead (1).html","Do NOT Take This Cat Home.html",
+"Fears to Fathom_ Home Alone.html","Flip Master.html","Football Bros.html","Friday Night Funkin.html",
+"JustFall.lol.html","Kindergarten.html","Kindergarten 2.html","Kindergarten 3.html",
+"Minecraft 1.21.4.html","Retro Bowl.html","Run 1.html","Run 2.html","Run 3.html","Schoolboy Runaway.html",
+"Slither.io.html","Slope.html","Sonic Mania.html","Sonic the Hedgehog 2_ Community's Cut.html","Sonic the Hedgehog 3_ Angel Island Remastered.html",
+"Sonic.EXE.html","Steal Brainrot Online.html","Stickman Fight Ragdoll.html","Stickman Hook.html",
+"Subway Surfers_ Barcelona.html","Super Mario Bros.html","supreme-duelists.html"
+];
+
+const gamesDiv=document.getElementById('games');
+GAME_FILES.forEach(fname=>{
+const card=document.createElement('div');
+card.className='game-card';
+const title=fname.replace(/\.html$/,'').toUpperCase();
+card.innerHTML=`<div>${title}</div>
+<div class="card-buttons">
+<button onclick="window.location='${fname}'">PLAY</button>
+<button onclick="window.open('${fname}','_blank')">ABOUT:BLANK</button>
+<button onclick="fetch('${fname}').then(r=>r.text()).then(t=>{const blob=new Blob([t],{type:'text/html'});window.open(URL.createObjectURL(blob),'_blank');})">BLOB LINK</button>
+<button onclick="document.body.requestPointerLock()">LOCK CURSOR</button>
+</div>`;
+gamesDiv.appendChild(card);
+});
+
+// SEARCH
+const searchInput=document.getElementById('search-games');
+searchInput.addEventListener('input',()=>{
+const query=searchInput.value.toLowerCase();
+document.querySelectorAll('.game-card').forEach(card=>{
+card.style.display=card.textContent.toLowerCase().includes(query)?'block':'none';
+});
+});
+
+// CUSTOMIZE PANEL
+const btn=document.getElementById('customize-btn');
+const panel=document.getElementById('custom-panel');
+btn.addEventListener('click',(e)=>{e.stopPropagation();panel.classList.toggle('open');});
+panel.addEventListener('click',(e)=>{e.stopPropagation();});
+document.addEventListener('click',()=>{panel.classList.remove('open');});
+
+});
+</script>
+</body>
+</html>
