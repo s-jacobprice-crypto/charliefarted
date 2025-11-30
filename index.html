@@ -74,6 +74,7 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
  ACCESS GRANTED
 </div>
 
+
 <div class="banner" id="custom-banner">Press PLAY to start a game — loading messages are chaotic!</div>
 
 <div style="display:flex;gap:18px">
@@ -81,7 +82,6 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
 <div class="search"><input id="search-games" type="text" placeholder="SEARCH GAMES..." style="width:100%;padding:8px;border-radius:6px"></div>
 <div class="games" id="games"></div>
 </div>
-
 <div id="custom-panel">
 <h3 style="color:var(--neon-green);margin-bottom:12px">CUSTOMIZE</h3>
 <div class="panel-section">
@@ -125,26 +125,6 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
 </div>
 </div>
 </div>
-
-<!-- DEPLOY PROXY SECTION -->
-<div style="display:flex;flex-direction:column;align-items:flex-start;margin:12px 24px;">
-  <button id="deploy-proxy-btn" style="padding:8px 12px;border-radius:6px;border:1px solid #00e6ff;background:transparent;color:#00e6ff;cursor:pointer;text-transform:uppercase;">
-    DEPLOY PROXY
-  </button>
-  <div id="caution-note" style="font-size:12px;color:orange;margin-top:4px;">
-    ⚠️ Be careful oof redirects
-  </div>
-</div>
-
-<!-- Loading overlay for proxy -->
-<div id="proxy-loading-overlay" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);color:white;font-family:monospace;font-size:14px;z-index:10000;">
-  <div style="background:rgba(0,0,0,0.9);padding:20px;border-radius:8px;text-align:center;max-width:400px;">
-    <div id="proxy-loading-message">Loading...</div>
-  </div>
-</div>
-
-<!-- Iframe for preview -->
-<iframe id="proxy-preview-frame" style="width:100%;height:80vh;border:none;display:none;margin-top:12px;"></iframe>
 
 <div class="loading-overlay" id="loading-overlay" aria-hidden="true">
 <div class="loading-box" role="status" aria-live="polite">
@@ -401,7 +381,190 @@ const prefs = {
  favs: JSON.parse(localStorage.getItem('pref-favs')||'[]')
 }
 
-// ... then continue the rest of your arcade JS logic and proxy JS logic here (unchanged) ...
+// ----------------- RENDERING -----------------
+const gamesDiv = document.getElementById('games');
+function buildCard(fname){
+ const card = document.createElement('div');
+ card.className='game-card';
+ const title = fname.replace(/\.html$/,'').replace(/[-\.]/g,' ').toUpperCase();
+ const id = fname;
+ const star = document.createElement('span');
+ star.innerHTML = prefs.favs.includes(id)?'⭐':'☆';
+ star.className='favorite';
+ star.title='Toggle favorite';
+ star.style.marginLeft='6px';
+ star.onclick = (e)=>{e.stopPropagation(); toggleFav(id); star.innerHTML = prefs.favs.includes(id)?'⭐':'☆'};
+ card.innerHTML = `<div style="font-size:12px">${title}</div>`;
+ const btns = document.createElement('div'); btns.className='card-buttons';
+ const play = document.createElement('button'); play.textContent='PLAY';
+ play.onclick = ()=> playGame(id);
+ const openBlank = document.createElement('button'); openBlank.textContent='ABOUT:BLANK';
+ openBlank.onclick = ()=> window.open(id,'_blank');
+ const blob = document.createElement('button'); blob.textContent='BLOB LINK';
+ blob.onclick = ()=> fetch(id).then(r=>r.text()).then(t=>{const blob2=new Blob([t],{type:'text/html'});window.open(URL.createObjectURL(blob2),'_blank')});
+ btns.append(play,openBlank,blob);
+ card.appendChild(btns);
+ card.appendChild(star);
+ return card;
+}
+
+function renderGames(filter=''){
+ gamesDiv.innerHTML='';
+ let list = GAME_FILES.slice();
+ if(filter==='favs') list = list.filter(x=>prefs.favs.includes(x));
+ list = list.filter(f=>f.toLowerCase().includes(filter==='favs'? '': filter.toLowerCase()));
+ list.forEach(f=> gamesDiv.appendChild(buildCard(f)));
+ applyGrid();
+}
+
+// ----------------- FAVORITES -----------------
+function toggleFav(id){
+ if(!prefs.favs.includes(id)) prefs.favs.push(id); else prefs.favs = prefs.favs.filter(x=>x!==id);
+ localStorage.setItem('pref-favs',JSON.stringify(prefs.favs));
+}
+
+// ----------------- LOADING + PLAY -----------------
+const overlay = document.getElementById('loading-overlay');
+const msgEl = document.getElementById('loading-message');
+const bar = document.getElementById('loading-bar');
+async function playGame(filename){
+ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
+ const randomMsg = randFrom(LOADING_MESSAGES);
+ msgEl.textContent = randomMsg;
+ // animate bar
+ let pct = 0; bar.style.width='0%';
+ const duration = 800 + Math.random()*2200; // 0.8 - 3s
+ const start = Date.now();
+ while(Date.now()-start < duration){
+   const t = (Date.now()-start)/duration;
+   pct = Math.min(100, Math.floor( (Math.sin(t*Math.PI/2)*0.9 + t*0.1) * 100));
+   bar.style.width = pct + '%';
+   await wait(80);
+ }
+ bar.style.width='100%';
+ // small pause to show 100%
+ await wait(200);
+ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
+ // finally open the game
+ window.open(filename,'_blank');
+}
+
+// ----------------- CUSTOMIZATION BEHAVIOR -----------------
+const customizeBtn = document.getElementById('customize-btn');
+const customPanel = document.getElementById('custom-panel');
+customizeBtn.addEventListener('click', (e)=>{e.stopPropagation(); customPanel.classList.toggle('open')});
+document.addEventListener('click', ()=> customPanel.classList.remove('open'));
+
+// controls
+const neonInput = document.getElementById('neon-color');
+const bgInput = document.getElementById('bg-color');
+const preset = document.getElementById('theme-preset');
+const gridSize = document.getElementById('grid-size');
+const toggleClock = document.getElementById('toggle-clock');
+const toggleVerse = document.getElementById('toggle-verse');
+const bannerInput = document.getElementById('banner-input');
+const saveBanner = document.getElementById('save-banner');
+const showFaves = document.getElementById('show-faves');
+const clearFaves = document.getElementById('clear-faves');
+const resetPrefs = document.getElementById('reset-prefs');
+
+neonInput.addEventListener('input', ()=>{document.documentElement.style.setProperty('--neon-blue', neonInput.value); localStorage.setItem('pref-neon',neonInput.value)});
+bgInput.addEventListener('input', ()=>{document.documentElement.style.setProperty('--bg-color', bgInput.value); document.body.style.background = bgInput.value; localStorage.setItem('pref-bg',bgInput.value)});
+
+preset.addEventListener('change', ()=>{
+ const v = preset.value;
+ if(v==='neon'){ neonInput.value='#00e6ff'; bgInput.value='#05030a'; }
+ if(v==='retro'){ neonInput.value='#ff6ec7'; bgInput.value='#101013'; }
+ if(v==='sunset'){ neonInput.value='#ff9a3c'; bgInput.value='#201220'; }
+ neonInput.dispatchEvent(new Event('input')); bgInput.dispatchEvent(new Event('input'));
+});
+
+gridSize.addEventListener('change', applyGrid);
+function applyGrid(){
+ const g = gridSize.value;
+ if(g==='small') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(140px,1fr))';
+ if(g==='medium') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(180px,1fr))';
+ if(g==='large') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(240px,1fr))';
+ localStorage.setItem('pref-grid',g);
+}
+
+saveBanner.addEventListener('click', ()=>{const t=bannerInput.value.trim(); if(t) {document.getElementById('custom-banner').textContent = t; localStorage.setItem('pref-banner',t);}});
+showFaves.addEventListener('click', ()=> renderGames('favs'));
+clearFaves.addEventListener('click', ()=>{prefs.favs=[]; localStorage.setItem('pref-favs','[]'); renderGames();});
+resetPrefs.addEventListener('click', ()=>{localStorage.clear(); location.reload();});
+
+// ----------------- SEARCH -----------------
+const searchInput = document.getElementById('search-games');
+searchInput.addEventListener('input', ()=>{renderGames(searchInput.value)});
+
+// ----------------- CLOCK & VERSE -----------------
+function pad(n){return n.toString().padStart(2,'0')}
+function updateClock(){const now=new Date();document.getElementById('clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`}
+setInterval(updateClock,1000); updateClock();
+
+// Verse box is optional - create if preference
+let verseBox = null;
+if(prefs.showVerse){ verseBox = document.createElement('div'); verseBox.className='banner'; verseBox.style.margin='12px 24px'; verseBox.style.fontSize='11px'; verseBox.textContent = 'THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1'; document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'))}
+
+// show/hide toggles
+toggleClock.checked = prefs.showClock; toggleVerse.checked = prefs.showVerse;
+toggleClock.addEventListener('change', ()=>{localStorage.setItem('pref-clock', toggleClock.checked); document.getElementById('clock').style.display = toggleClock.checked? 'block':'none'});
+toggleVerse.addEventListener('change', ()=>{localStorage.setItem('pref-verse', toggleVerse.checked); if(toggleVerse.checked && !verseBox){verseBox = document.createElement('div'); verseBox.className='banner'; verseBox.style.margin='12px 24px'; verseBox.style.fontSize='11px'; verseBox.textContent='THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1'; document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'))} else if(!toggleVerse.checked && verseBox){verseBox.remove(); verseBox=null}});
+
+// ----------------- INIT -----------------
+(function init(){
+ // apply prefs
+ document.documentElement.style.setProperty('--neon-blue', prefs.neon);
+ document.body.style.background = prefs.bg;
+ neonInput.value = prefs.neon; bgInput.value = prefs.bg; bannerInput.value = prefs.banner; document.getElementById('custom-banner').textContent = prefs.banner;
+ gridSize.value = prefs.grid; applyGrid();
+ // render games
+ renderGames();
+})();
+
+// ----------------- keyboard shortkeys (fun) -----------------
+document.addEventListener('keydown', (e)=>{ if(e.key==='f'){ renderGames('favs') } if(e.key==='/'){ searchInput.focus() } });
+
+// LOGIN SYSTEM
+let accounts = JSON.parse(localStorage.getItem('accounts')||'{}');
+
+function showSignup(){
+ document.getElementById('login-screen').style.display='none';
+ document.getElementById('signup-screen').style.display='flex';
+}
+function showLogin(){
+ document.getElementById('signup-screen').style.display='none';
+ document.getElementById('login-screen').style.display='flex';
+}
+function attemptSignup(){
+ const u=document.getElementById('signup-username').value.trim();
+ const p=document.getElementById('signup-password').value.trim();
+ if(accounts[u]){
+  document.getElementById('signup-error').style.display='block';
+  return;
+ }
+ accounts[u]=p;
+ localStorage.setItem('accounts',JSON.stringify(accounts));
+ showLogin();
+}
+function attemptLogin(){
+ const u=document.getElementById('login-username').value.trim();
+ const p=document.getElementById('login-password').value.trim();
+ if(accounts[u]!==p){
+  document.getElementById('login-error').style.display='block';
+  return;
+ }
+ document.getElementById('login-error').style.display='none';
+ grantAccess();
+}
+function grantAccess(){
+ document.getElementById('login-screen').style.display='none';
+ document.getElementById('signup-screen').style.display='none';
+ document.getElementById('access-granted').style.display='flex';
+ setTimeout(()=>{
+  document.getElementById('access-granted').style.display='none';
+ },1200);
+}
 
 </script>
 </body>
