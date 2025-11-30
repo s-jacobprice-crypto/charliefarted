@@ -1,29 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JACOB'S ARCADE V2</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>JACOB'S ARCADE V3</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-:root{--neon-blue:#00e6ff;--neon-green:#7cff00;--bg-color:#05030a;--card-bg:rgba(255,255,255,0.02);--text:#e6faff}
+:root{
+  --neon-blue:#00e6ff;
+  --neon-green:#7cff00;
+  --bg-color:#05030a;
+  --card-bg:rgba(255,255,255,0.02);
+  --text:#e6faff;
+  --muted: rgba(255,255,255,0.18);
+}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:"Press Start 2P",Arial,sans-serif;color:var(--text);background:var(--bg-color);overflow-x:hidden}
 header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.04);position:relative;z-index:30}
-.logo{width:48px;height:48px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#001}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#001;font-weight:700}
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:24px}
 .game-card{background:var(--card-bg);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(255,255,255,0.03);transition:transform .15s,box-shadow .15s}
 .game-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 8px 24px rgba(0,200,255,0.06)}
-.card-buttons{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
-button{font-size:10px;padding:6px 8px;cursor:pointer;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--neon-blue);text-transform:uppercase}
-#deploy-proxy-btn{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:40;padding:8px 12px;border-radius:8px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));color:#001;font-weight:700;cursor:pointer;border:none}
-#proxy-overlay{position:fixed;inset:0;background:#000;display:none;z-index:10000;align-items:stretch;justify-content:stretch}
-#proxy-iframe{width:100%;height:100%;border:0}
-#proxy-back{position:fixed;left:12px;top:12px;z-index:11000;border-radius:8px;padding:8px 10px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.06);cursor:pointer}
-#custom-panel{position:fixed;top:0;right:-360px;width:340px;height:100%;background:rgba(0,0,0,0.85);padding:18px;border-radius:10px 0 0 10px;box-shadow:-4px 0 20px rgba(0,0,0,0.5);transition:right .28s ease;z-index:1000}
+.card-buttons{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+button, .btn {
+  font-size:10px;padding:6px 8px;cursor:pointer;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--neon-blue);text-transform:uppercase;
+}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
+#deploy-proxy-btn{
+  position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:40;padding:8px 14px;border-radius:10px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));color:#001;font-weight:700;cursor:pointer;border:none;box-shadow:0 6px 18px rgba(0,0,0,0.4)
+}
+#proxy-overlay{
+  position:fixed;inset:0;background:#000;display:none;z-index:10000;align-items:stretch;justify-content:stretch;overflow:hidden
+}
+#proxy-iframe{width:100%;height:100%;border:0;background:white}
+#proxy-back{
+  position:fixed;left:12px;top:12px;z-index:11000;border-radius:8px;padding:8px 10px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.06);cursor:pointer;color:var(--neon-green)
+}
+#custom-panel{position:fixed;top:0;right:-360px;width:340px;height:100%;background:rgba(0,0,0,0.9);padding:18px;border-radius:10px 0 0 10px;box-shadow:-4px 0 20px rgba(0,0,0,0.5);transition:right .28s ease;z-index:1000}
 #custom-panel.open{right:0}
 .panel-section{margin-bottom:14px}
-.panel-section label{display:block;margin-bottom:6px;font-size:12px}
+.panel-section label{display:block;margin-bottom:6px;font-size:12px;color:var(--muted)}
 input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text)}
 .small{font-size:11px;padding:4px}
 .loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:2000;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
@@ -34,9 +50,12 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
 .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));transition:width .2s}
 .header-row{display:flex;gap:12px;align-items:center}
 .search{margin:18px}
-.favorite{cursor:pointer;opacity:.9}
+.favorite{cursor:pointer;opacity:.95}
 .banner{padding:8px;background:linear-gradient(90deg,rgba(0,0,0,0.4),rgba(255,255,255,0.02));text-align:center;margin:12px 24px;border-radius:8px}
 .footer{padding:12px;text-align:center;font-size:12px;opacity:.9}
+.auth-box{display:flex;flex-direction:column;gap:8px;align-items:center}
+.auth-box input{width:260px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text)}
+.note{font-size:10px;color:var(--muted);margin-top:8px;text-align:center}
 @media(max-width:880px){#custom-panel{width:86%}}
 </style>
 </head>
@@ -45,14 +64,14 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
   <div class="header-row">
     <div class="logo">J²</div>
     <div>
-      <h1 style="font-size:16px;color:var(--neon-blue);letter-spacing:1px">JACOB'S ARCADE V2</h1>
+      <h1 style="font-size:16px;color:var(--neon-blue);letter-spacing:1px">JACOB'S ARCADE V3</h1>
       <div id="banner-text" style="font-size:10px;color:var(--neon-green);text-transform:uppercase">WELCOME</div>
     </div>
   </div>
 
   <div class="header-row" style="gap:10px;">
     <div id="clock" style="font-size:12px;color:var(--neon-green);text-transform:uppercase">00:00:00</div>
-    <button id="customize-btn">CUSTOMIZE</button>
+    <button id="customize-btn" class="btn">CUSTOMIZE</button>
   </div>
 </header>
 
@@ -61,27 +80,41 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
 
 <!-- Proxy overlay (hidden until deploy clicked) -->
 <div id="proxy-overlay" aria-hidden="true">
-  <button id="proxy-back" title="Back to Arcade">BACK TO HOME</button>
+  <button id="proxy-back" title="Back to Arcade">← BACK</button>
   <iframe id="proxy-iframe" src="" frameborder="0" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
 </div>
 
 <!-- LOGIN + SIGNUP OVERLAY -->
-<div id="login-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:5000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
- <h2 style="margin-bottom:20px;">LOGIN</h2>
- <input id="login-username" type="text" placeholder="USERNAME" style="padding:10px;margin:6px;width:260px;text-align:center;">
- <input id="login-password" type="password" placeholder="PASSWORD" style="padding:10px;margin:6px;width:260px;text-align:center;">
- <button onclick="attemptLogin()" style="margin-top:10px;padding:10px 14px;">LOGIN</button>
- <div id="login-error" style="color:red;font-size:12px;margin-top:8px;display:none;">Wrong username or password</div>
- <p style="margin-top:18px;font-size:10px;">No account? <span onclick="showSignup()" style="color:#00e6ff;cursor:pointer;">SIGN UP</span></p>
+<div id="login-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:5000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
+ <div style="text-align:center;">
+   <h2 style="margin-bottom:14px;">LOGIN</h2>
+   <div class="auth-box">
+     <input id="login-username" type="text" placeholder="USERNAME">
+     <input id="login-password" type="password" placeholder="PASSWORD">
+     <div style="display:flex;gap:8px;margin-top:6px">
+       <button id="login-btn" class="btn">LOGIN</button>
+       <button id="show-signup-btn" class="btn">SIGN UP</button>
+     </div>
+     <div id="login-error" style="color:#ff6b6b;font-size:12px;margin-top:8px;display:none;">Wrong username or password</div>
+     <div class="note">Local-only demo auth (passwords hashed client-side)</div>
+   </div>
+ </div>
 </div>
 
-<div id="signup-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:5000;display:none;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
- <h2 style="margin-bottom:20px;">SIGN UP</h2>
- <input id="signup-username" type="text" placeholder="CREATE USERNAME" style="padding:10px;margin:6px;width:260px;text-align:center;">
- <input id="signup-password" type="password" placeholder="CREATE PASSWORD" style="padding:10px;margin:6px;width:260px;text-align:center;">
- <button onclick="attemptSignup()" style="margin-top:10px;padding:10px 14px;">CREATE ACCOUNT</button>
- <div id="signup-error" style="color:red;font-size:12px;margin-top:8px;display:none;">Username already exists</div>
- <p style="margin-top:18px;font-size:10px;">Have an account? <span onclick="showLogin()" style="color:#00e6ff;cursor:pointer;">LOGIN</span></p>
+<div id="signup-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:5000;display:none;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
+ <div style="text-align:center;">
+   <h2 style="margin-bottom:14px;">SIGN UP</h2>
+   <div class="auth-box">
+     <input id="signup-username" type="text" placeholder="CREATE USERNAME">
+     <input id="signup-password" type="password" placeholder="CREATE PASSWORD">
+     <div style="display:flex;gap:8px;margin-top:6px">
+       <button id="create-account-btn" class="btn">CREATE</button>
+       <button id="show-login-btn" class="btn">BACK</button>
+     </div>
+     <div id="signup-error" style="color:#ff6b6b;font-size:12px;margin-top:8px;display:none;">Username already exists</div>
+     <div class="note">Passwords are hashed with SHA-256 before saving (client-side)</div>
+   </div>
+ </div>
 </div>
 
 <div id="access-granted" style="position:fixed;inset:0;background:black;z-index:6000;color:lime;font-family:'Press Start 2P';display:none;align-items:center;justify-content:center;font-size:22px;">
@@ -151,350 +184,141 @@ input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6
 <div class="footer">FOLLOW — YOUTUBE / TWITCH / TIKTOK</div>
 
 <script>
-// ----------------- CORE DATA -----------------
+/* ----------------- CORE DATA ----------------- */
 const GAME_FILES = [
-"1v1lol.html",
-"amanda.html",
-"aquapark.html",
-"bad-parenting-1.html",
-"baldis-basics.html",
-"baseball-bros.html",
-"basket-bros.html",
-"bitlife.html",
-"block-blast.html",
-"bowmasters.html",
-"buildnow.gg.html",
-"clash-of-vikings.html",
-"cuphead-1.html",
-"do-not-take-this-cat-home.html",
-"fears-to-fathom-home-alone.html",
-"flip-master.html",
-"football-bros.html",
-"friday-night-funkin.html",
-"justfall.lol.html",
-"kindergarten.html",
-"kindergarten-2.html",
-"kindergarten-3.html",
-"minecraft-1.21.4.html",
-"retro-bowl.html",
-"run-1.html",
-"run-2.html",
-"run-3.html",
-"schoolboy-runaway.html",
-"slither.io.html",
-"slope.html",
-"sonic-mania.html",
-"sonic-the-hedgehog-2-communitys-cut.html",
-"sonic-the-hedgehog-3-angel-island-remastered.html",
-"sonic.exe.html",
-"steal-brainrot-online.html",
-"stickman-fight-ragdoll.html",
-"stickman-hook.html",
-"subway-surfers-barcelona.html",
-"super-mario-bros.html",
-"supreme-duelists.html"
+"1v1lol.html","amanda.html","aquapark.html","bad-parenting-1.html","baldis-basics.html",
+"baseball-bros.html","basket-bros.html","bitlife.html","block-blast.html","bowmasters.html",
+"buildnow.gg.html","clash-of-vikings.html","cuphead-1.html","do-not-take-this-cat-home.html",
+"fears-to-fathom-home-alone.html","flip-master.html","football-bros.html","friday-night-funkin.html",
+"justfall.lol.html","kindergarten.html","kindergarten-2.html","kindergarten-3.html",
+"minecraft-1.21.4.html","retro-bowl.html","run-1.html","run-2.html","run-3.html",
+"schoolboy-runaway.html","slither.io.html","slope.html","sonic-mania.html",
+"sonic-the-hedgehog-2-communitys-cut.html","sonic-the-hedgehog-3-angel-island-remastered.html",
+"sonic.exe.html","steal-brainrot-online.html","stickman-fight-ragdoll.html","stickman-hook.html",
+"subway-surfers-barcelona.html","super-mario-bros.html","supreme-duelists.html"
 ];
 
-// ----------------- LOADING MESSAGES (200+) -----------------
 const LOADING_MESSAGES = [
-"Loading... bruh the hamster fell off the wheel",
-"Game is booting up... it’s lagging like your WiFi",
-"Hold on, the pixels are arguing again",
-"Loading... your PC is crying but it’ll be okay",
-"Bringing snacks for the CPU",
-"Summoning the joystick spirits",
-"Polishing the high scores",
-"Tightening sprites' shoelaces",
-"Applying duct tape to the physics engine",
-"Feeding the binary hamsters",
-"Charging the fun capacitor",
-"Warming up the magenta pixels",
-"Checking for missing semicolons",
-"Negotiating with the browser for extra RAM",
-"Borrowing energy from Pluto",
-"Asking the clouds for frames per second",
-"Whispering to the WASM gods",
-"Convincing the fonts to cooperate",
-"Debugging with a rubber chicken",
-"Loading... the snail courier is almost there",
-"Tuning the retro synths",
-"Infusing code with extra vibes",
-"Making sure the hero has a cool hat",
-"Applying anti-glitch stickers",
-"Rebooting the imagination module",
-"Searching for lost pixels",
-"Shouting encouragement at the CPU",
-"Packing parachutes for sprites",
-"Latent meme retrieval in progress",
-"Adjusting gravity to moderate",
-"Upgrading the fun meter to max",
-"Casting spell: 'Smooth Frame'",
-"Collecting invisible coins",
-"Polishing controller ports",
-"Assembling level blocks from moon dust",
-"Inviting friendly NPCs to warm up",
-"Encrypting the secret handshake",
-"Feeding the audio driver",
-"Practicing victory dances",
-"Smoothing collision edges",
-"Loading... locating the cheat codes (jk)",
-"Ordering virtual pizza for the devs",
-"Checking if the cat unplugged the server",
-"Stealing power from the sun (temporarily)",
-"Waking up the boss fight slowly",
-"Replacing pixels with premium pixels",
-"Herding stray sprites back on stage",
-"Repairing the silicon backbone",
-"Testing jump physics with a frog",
-"Polishing the coin animations",
-"Summoning a tiny loading wizard",
-"Configuring the 'epic' variable",
-"Searching for the 'fun' constant",
-"Calibrating danger meter",
-"Counting to 3, 2, 1... almost",
-"Temporarily upgrading to awesome mode",
-"Adjusting soundtrack bpm",
-"Cleaning up leftover debug confetti",
-"Rewiring the joy of play",
-"Distributing extra lives fairly",
-"Enforcing the 'no lag' policy",
-"Feeding pixels to the color wheel",
-"Consulting the sacred game manual",
-"Greasing the gears of destiny",
-"Tuning audio waves for maximum thump",
-"Sending a carrier pigeon to the server",
-"Reticulating splines... wait what?",
-"Optimizing fun-per-second ratio",
-"Translating sprites into good moods",
-"Checking for rogue easter eggs",
-"Loading nostalgia engines",
-"Turning the volume down for dramatic effect",
-"Asking the database to be brave",
-"Polishing leaderboards until they shine",
-"Warming up the victory music",
-"Checking if the user is smiling yet",
-"Counting the number of pixels ironically",
-"Applying anti-boredom patch",
-"Consulting the oracle for level order",
-"Initiating confetti sequence (standby)",
-"Retrieving the developer's lost keys",
-"Charging the warp drive slowly",
-"Giving the hero a temporary cape",
-"Spawning a friendly duck for morale",
-"Testing a new game over sound (oof)",
-"Censoring harsh boss language",
-"Setting difficulty to 'just right'",
-"Running background tickle algorithm",
-"Contacting alternate dimension for textures",
-"Sharpening the pixel swords",
-"Ensuring the coins are shiny",
-"Decorating the main menu with sparkles",
-"Calling the sprite stylist",
-"Handing out tiny power-ups to code",
-"Looping the theme song twice",
-"Counting backwards from infinity",
-"Rearranging stars for better aesthetics",
-"Wiring dreams into the renderer",
-"Consulting a fortune cookie for hints",
-"Asking permission to be awesome",
-"Refilling the 'epicness' tank",
-"Applying a generous coat of polish",
-"Calibrating jumps to feel satisfying",
-"Checking for imposter sprites",
-"Injecting caffeine into the main loop",
-"Replacing boring textures with jazz",
-"Testing if gravity is optional",
-"Feeding the AI compliments",
-"Polishing buttons until they gleam",
-"Throwing confetti at success probability",
-"Recruiting a minor god of glitches",
-"Installing fun drivers (v1.0)",
-"Ordering spare lives from Amazon",
-"Adjusting pixel brightness for dramatic flare",
-"Upgrading hero with temporary mustache",
-"Training enemies to be polite",
-"Checking if the keyboard is awake",
-"Summoning tiny hamsters for RNG",
-"Applying 'do not crash' sticker",
-"Hugging the nearest sprite for courage",
-"Loading... please don't refresh",
-"Updating mood to 'excited'",
-"Polishing the joystick until it squeaks",
-"Installing patch: 'less rage'",
-"Removing suspicious lag molecules",
-"Attaching a cape to the enemy (why not)",
-"Counting to 7 and skipping 3",
-"Borrowing extra frames from the future",
-"Telling a joke to the renderer",
-"Fluffing the cloud sprites",
-"Rearranging level tiles politely",
-"Charging the 'fun' battery to 37%",
-"Applying realistic but fun physics",
-"Collecting applause from the audience",
-"Aligning the stars for perfect frames",
-"Procuring a tiny umbrella for sprites",
-"Removing leftover debug snack wrappers",
-"Training the soundtrack for tempo changes",
-"Applying bandaid to the boss fight",
-"Asking the code to take a deep breath",
-"Hiding a surprise behind a block",
-"Attaching googly eyes to the main menu",
-"Synchronizing background dancers",
-"Preparing the final dramatic drum roll",
-"Filling map with small mysteries",
-"Adjusting coin magnetism slightly",
-"Replacing placeholder text with passion",
-"Calibrating the 'oof' sound for maximum effect",
-"Installing new smiles per minute algorithm",
-"Testing if the level smells good (jk)",
-"Giving the protagonist a motivational speech",
-"Tuning the bounce of trampolines",
-"Encouraging enemies to be slightly friendlier",
-"Wrapping the game in pixels of joy",
-"Stealthily slipping in extra lives",
-"Hoping the debug fairies show up",
-"Feeding the audio mixer with optimism",
-"Applying a sprinkle of chaos (careful)",
-"Optimizing the 'yay' sounds",
-"Checking if gravity wants a day off",
-"Tucking the save file in safely",
-"Polishing the end-screen applause",
-"Searching for hidden skill trees",
-"Applying a tiny sparkle to the HUD",
-"Listening for applause from your keyboard",
-"Summoning a background drummer",
-"Assembling the intro cutscene slowly",
-"Warming up the nostalgia generator",
-"Calibrating pixel-to-smile ratio",
-"Recommending a snack break just in case",
-"Turning on the 'good vibes' toggle",
-"Counting the frames with affection",
-"Hiding easter eggs in the code comments",
-"Collecting all the little wows",
-"Doing a small dance while loading",
-"Searching the attic for extra sprites",
-"Filling the sky with tiny comets",
-"Checking for friendly clouds",
-"Polishing controller grips for comfort",
-"Wrapping up and handing it to you",
+"Loading... bruh the hamster fell off the wheel","Game is booting up... it’s lagging like your WiFi",
+"Hold on, the pixels are arguing again","Loading... your PC is crying but it’ll be okay",
+"Bringing snacks for the CPU","Summoning the joystick spirits","Polishing the high scores",
+"Tightening sprites' shoelaces","Applying duct tape to the physics engine","Feeding the binary hamsters",
+"Charging the fun capacitor","Warming up the magenta pixels","Checking for missing semicolons",
+"Negotiating with the browser for extra RAM","Borrowing energy from Pluto","Asking the clouds for frames per second",
+"Whispering to the WASM gods","Convincing the fonts to cooperate","Debugging with a rubber chicken",
+"Loading... the snail courier is almost there","Tuning the retro synths","Infusing code with extra vibes",
+"Making sure the hero has a cool hat","Applying anti-glitch stickers","Rebooting the imagination module",
+"Searching for lost pixels","Shouting encouragement at the CPU","Packing parachutes for sprites",
+"Latent meme retrieval in progress","Adjusting gravity to moderate","Upgrading the fun meter to max",
 "One moment while we summon the fun!"
 ];
 
-// ----------------- UTILS -----------------
-function randFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+/* ----------------- UTILS ----------------- */
+function randFrom(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)) }
 
-// ----------------- PERSISTENCE -----------------
+/* ----------------- PERSISTENCE / PREFS ----------------- */
 const prefs = {
- neon: localStorage.getItem('pref-neon') || '#00e6ff',
- bg: localStorage.getItem('pref-bg') || '#05030a',
- banner: localStorage.getItem('pref-banner') || 'Welcome to the arcade!',
- grid: localStorage.getItem('pref-grid') || 'medium',
- showClock: localStorage.getItem('pref-clock')==='false'?false:true,
- showVerse: localStorage.getItem('pref-verse')==='false'?false:true,
- favs: JSON.parse(localStorage.getItem('pref-favs')||'[]')
+  neon: localStorage.getItem('pref-neon') || '#00e6ff',
+  bg: localStorage.getItem('pref-bg') || '#05030a',
+  banner: localStorage.getItem('pref-banner') || 'Welcome to the arcade!',
+  grid: localStorage.getItem('pref-grid') || 'medium',
+  showClock: localStorage.getItem('pref-clock')==='false'?false:true,
+  showVerse: localStorage.getItem('pref-verse')==='false'?false:true,
+  favs: JSON.parse(localStorage.getItem('pref-favs')||'[]')
 }
 
-// ----------------- RENDERING -----------------
+/* ----------------- RENDERING ----------------- */
 const gamesDiv = document.getElementById('games');
+
 function buildCard(fname){
- const card = document.createElement('div');
- card.className='game-card';
- const title = fname.replace(/\.html$/,'').replace(/[-\.]/g,' ').toUpperCase();
- const id = fname;
- const star = document.createElement('span');
- star.innerHTML = prefs.favs.includes(id)?'⭐':'☆';
- star.className='favorite';
- star.title='Toggle favorite';
- star.style.marginLeft='6px';
- star.onclick = (e)=>{e.stopPropagation(); toggleFav(id); star.innerHTML = prefs.favs.includes(id)?'⭐':'☆'};
- card.innerHTML = `<div style="font-size:12px">${title}</div>`;
- const btns = document.createElement('div'); btns.className='card-buttons';
- const play = document.createElement('button'); play.textContent='PLAY';
- // PLAY -> opens in same tab (navigate)
- play.onclick = ()=> { window.location.href = id; };
+  const card = document.createElement('div');
+  card.className='game-card';
+  const title = fname.replace(/\.html$/,'').replace(/[-\.]/g,' ').toUpperCase();
+  const id = fname;
+  const star = document.createElement('span');
+  star.innerHTML = prefs.favs.includes(id)?'⭐':'☆';
+  star.className='favorite';
+  star.title='Toggle favorite';
+  star.style.marginLeft='6px';
+  star.onclick = (e)=>{ e.stopPropagation(); toggleFav(id); star.innerHTML = prefs.favs.includes(id)?'⭐':'☆'; };
+  card.innerHTML = `<div style="font-size:12px">${title}</div>`;
+  const btns = document.createElement('div'); btns.className='card-buttons';
 
- const openBlank = document.createElement('button'); openBlank.textContent='ABOUT:BLANK';
- // ABOUT:BLANK -> open a new about:blank window and inject iframe with blob (cloaked)
- openBlank.onclick = async (e)=> {
-   e.stopPropagation();
-   try {
-     const w = window.open('about:blank');
-     if(!w) return alert('Popup blocked. Allow popups for this site to use about:blank open.');
-     const res = await fetch(id);
-     const txt = await res.text();
-     const blob = new Blob([txt], {type:'text/html'});
-     const blobUrl = URL.createObjectURL(blob);
-     // write minimal HTML that loads the blob-url inside a full iframe
-     const doc = w.document;
-     doc.open();
-     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>html,body{height:100%;margin:0;background:#000}iframe{border:0;width:100%;height:100%}</style></head><body><iframe src="${blobUrl}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe></body></html>`);
-     doc.close();
-   } catch(err) {
-     console.error(err);
-     alert('Failed to open ABOUT:BLANK');
-   }
- };
+  const play = document.createElement('button'); play.textContent='PLAY';
+  play.onclick = ()=> { window.location.href = id; }; // same-tab
 
- const blob = document.createElement('button'); blob.textContent='BLOB LINK';
- blob.onclick = ()=> fetch(id).then(r=>r.text()).then(t=>{const blob2=new Blob([t],{type:'text/html'});window.open(URL.createObjectURL(blob2),'_blank')});
- btns.append(play,openBlank,blob);
- card.appendChild(btns);
- card.appendChild(star);
- return card;
+  const openBlank = document.createElement('button'); openBlank.textContent='ABOUT:BLANK';
+  openBlank.onclick = async (e)=> {
+    e.stopPropagation();
+    try {
+      const w = window.open('about:blank');
+      if(!w) { alert('Popup blocked. Allow popups for this site.'); return; }
+      const res = await fetch(id);
+      const txt = await res.text();
+      const blob = new Blob([txt], {type:'text/html'});
+      const blobUrl = URL.createObjectURL(blob);
+      const doc = w.document;
+      doc.open();
+      doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>html,body{height:100%;margin:0;background:#000}iframe{border:0;width:100%;height:100%}</style></head><body><iframe src="${blobUrl}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe></body></html>`);
+      doc.close();
+    } catch(err){ console.error(err); alert('Failed to open ABOUT:BLANK'); }
+  };
+
+  const blob = document.createElement('button'); blob.textContent='BLOB LINK';
+  blob.onclick = ()=> fetch(id).then(r=>r.text()).then(t=>{const blob2=new Blob([t],{type:'text/html'});window.open(URL.createObjectURL(blob2),'_blank')});
+
+  btns.append(play,openBlank,blob);
+  card.appendChild(btns);
+  card.appendChild(star);
+  return card;
 }
 
 function renderGames(filter=''){
- gamesDiv.innerHTML='';
- let list = GAME_FILES.slice();
- if(filter==='favs') {
-   list = list.filter(x=>prefs.favs.includes(x));
- } else if (filter && typeof filter === 'string' && filter.trim() !== '') {
-   list = list.filter(f=>f.toLowerCase().includes(filter.toLowerCase()));
- }
- list.forEach(f=> gamesDiv.appendChild(buildCard(f)));
- applyGrid();
+  gamesDiv.innerHTML='';
+  let list = GAME_FILES.slice();
+  if(filter==='favs') list = list.filter(x=>prefs.favs.includes(x));
+  else if(filter && typeof filter === 'string' && filter.trim()!=='') list = list.filter(f=>f.toLowerCase().includes(filter.toLowerCase()));
+  list.forEach(f=> gamesDiv.appendChild(buildCard(f)));
+  applyGrid();
 }
 
-// ----------------- FAVORITES -----------------
+/* ----------------- FAVORITES ----------------- */
 function toggleFav(id){
- if(!prefs.favs.includes(id)) prefs.favs.push(id); else prefs.favs = prefs.favs.filter(x=>x!==id);
- localStorage.setItem('pref-favs',JSON.stringify(prefs.favs));
+  if(!prefs.favs.includes(id)) prefs.favs.push(id); else prefs.favs = prefs.favs.filter(x=>x!==id);
+  localStorage.setItem('pref-favs',JSON.stringify(prefs.favs));
 }
 
-// ----------------- LOADING + PLAY -----------------
+/* ----------------- LOADING + PLAY UI ----------------- */
 const overlay = document.getElementById('loading-overlay');
 const msgEl = document.getElementById('loading-message');
 const bar = document.getElementById('loading-bar');
+
 async function playGame(filename){
- overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
- const randomMsg = randFrom(LOADING_MESSAGES);
- msgEl.textContent = randomMsg;
- // animate bar
- let pct = 0; bar.style.width='0%';
- const duration = 800 + Math.random()*2200; // 0.8 - 3s
- const start = Date.now();
- while(Date.now()-start < duration){
-   const t = (Date.now()-start)/duration;
-   pct = Math.min(100, Math.floor( (Math.sin(t*Math.PI/2)*0.9 + t*0.1) * 100));
-   bar.style.width = pct + '%';
-   await wait(80);
- }
- bar.style.width='100%';
- // small pause to show 100%
- await wait(200);
- overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
- // finally open the game (navigate in same tab)
- window.location.href = filename;
+  overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
+  const randomMsg = randFrom(LOADING_MESSAGES);
+  msgEl.textContent = randomMsg;
+  let pct = 0; bar.style.width='0%';
+  const duration = 800 + Math.random()*2200;
+  const start = Date.now();
+  while(Date.now()-start < duration){
+    const t = (Date.now()-start)/duration;
+    pct = Math.min(100, Math.floor( (Math.sin(t*Math.PI/2)*0.9 + t*0.1) * 100 ));
+    bar.style.width = pct + '%';
+    await wait(80);
+  }
+  bar.style.width='100%';
+  await wait(200);
+  overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
+  window.location.href = filename;
 }
 
-// ----------------- CUSTOMIZATION BEHAVIOR -----------------
+/* ----------------- CUSTOMIZATION BEHAVIOR ----------------- */
 const customizeBtn = document.getElementById('customize-btn');
 const customPanel = document.getElementById('custom-panel');
-customizeBtn.addEventListener('click', (e)=>{e.stopPropagation(); customPanel.classList.toggle('open')});
+customizeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); customPanel.classList.toggle('open') });
 document.addEventListener('click', (e)=> { if(!customPanel.contains(e.target) && e.target !== customizeBtn) customPanel.classList.remove('open') });
 
-// controls
 const neonInput = document.getElementById('neon-color');
 const bgInput = document.getElementById('bg-color');
 const preset = document.getElementById('theme-preset');
@@ -507,133 +331,197 @@ const showFaves = document.getElementById('show-faves');
 const clearFaves = document.getElementById('clear-faves');
 const resetPrefs = document.getElementById('reset-prefs');
 
-neonInput.addEventListener('input', ()=>{document.documentElement.style.setProperty('--neon-blue', neonInput.value); localStorage.setItem('pref-neon',neonInput.value)});
-bgInput.addEventListener('input', ()=>{document.documentElement.style.setProperty('--bg-color', bgInput.value); document.body.style.background = bgInput.value; localStorage.setItem('pref-bg',bgInput.value)});
+neonInput.addEventListener('input', ()=>{ document.documentElement.style.setProperty('--neon-blue', neonInput.value); localStorage.setItem('pref-neon',neonInput.value) });
+bgInput.addEventListener('input', ()=>{ document.documentElement.style.setProperty('--bg-color', bgInput.value); document.body.style.background = bgInput.value; localStorage.setItem('pref-bg',bgInput.value) });
 
 preset.addEventListener('change', ()=>{
- const v = preset.value;
- if(v==='neon'){ neonInput.value='#00e6ff'; bgInput.value='#05030a'; }
- if(v==='retro'){ neonInput.value='#ff6ec7'; bgInput.value='#101013'; }
- if(v==='sunset'){ neonInput.value='#ff9a3c'; bgInput.value='#201220'; }
- neonInput.dispatchEvent(new Event('input')); bgInput.dispatchEvent(new Event('input'));
+  const v = preset.value;
+  if(v==='neon'){ neonInput.value='#00e6ff'; bgInput.value='#05030a'; }
+  if(v==='retro'){ neonInput.value='#ff6ec7'; bgInput.value='#101013'; }
+  if(v==='sunset'){ neonInput.value='#ff9a3c'; bgInput.value='#201220'; }
+  neonInput.dispatchEvent(new Event('input')); bgInput.dispatchEvent(new Event('input'));
 });
 
 gridSize.addEventListener('change', applyGrid);
 function applyGrid(){
- const g = gridSize.value;
- if(g==='small') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(140px,1fr))';
- if(g==='medium') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(180px,1fr))';
- if(g==='large') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(240px,1fr))';
- localStorage.setItem('pref-grid',g);
+  const g = gridSize.value;
+  if(g==='small') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(140px,1fr))';
+  if(g==='medium') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(180px,1fr))';
+  if(g==='large') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(240px,1fr))';
+  localStorage.setItem('pref-grid',g);
 }
 
-saveBanner.addEventListener('click', ()=>{const t=bannerInput.value.trim(); if(t) {document.getElementById('custom-banner').textContent = t; localStorage.setItem('pref-banner',t);}});
+saveBanner.addEventListener('click', ()=>{ const t=bannerInput.value.trim(); if(t){ document.getElementById('custom-banner').textContent = t; localStorage.setItem('pref-banner',t); }});
 showFaves.addEventListener('click', ()=> renderGames('favs'));
-clearFaves.addEventListener('click', ()=>{prefs.favs=[]; localStorage.setItem('pref-favs','[]'); renderGames();});
-resetPrefs.addEventListener('click', ()=>{localStorage.clear(); location.reload();});
+clearFaves.addEventListener('click', ()=>{ prefs.favs=[]; localStorage.setItem('pref-favs','[]'); renderGames(); });
+resetPrefs.addEventListener('click', ()=>{ localStorage.clear(); location.reload(); });
 
-// ----------------- SEARCH -----------------
+/* ----------------- SEARCH ----------------- */
 const searchInput = document.getElementById('search-games');
-searchInput.addEventListener('input', ()=>{renderGames(searchInput.value)});
+searchInput.addEventListener('input', ()=>{ renderGames(searchInput.value) });
 
-// ----------------- CLOCK & VERSE -----------------
-function pad(n){return n.toString().padStart(2,'0')}
-function updateClock(){const now=new Date();document.getElementById('clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`}
+/* ----------------- CLOCK & VERSE ----------------- */
+function pad(n){ return n.toString().padStart(2,'0') }
+function updateClock(){ const now=new Date(); document.getElementById('clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}` }
 setInterval(updateClock,1000); updateClock();
 
-// Verse box is optional - create if preference
 let verseBox = null;
-if(prefs.showVerse){ verseBox = document.createElement('div'); verseBox.className='banner'; verseBox.style.margin='12px 24px'; verseBox.style.fontSize='11px'; verseBox.textContent = 'THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1'; document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'))}
+if(prefs.showVerse){
+  verseBox = document.createElement('div');
+  verseBox.className='banner';
+  verseBox.style.margin='12px 24px';
+  verseBox.style.fontSize='11px';
+  verseBox.textContent = 'THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1';
+  document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'));
+}
 
-// show/hide toggles
 toggleClock.checked = prefs.showClock; toggleVerse.checked = prefs.showVerse;
-toggleClock.addEventListener('change', ()=>{localStorage.setItem('pref-clock', toggleClock.checked); document.getElementById('clock').style.display = toggleClock.checked? 'block':'none'});
-toggleVerse.addEventListener('change', ()=>{localStorage.setItem('pref-verse', toggleVerse.checked); if(toggleVerse.checked && !verseBox){verseBox = document.createElement('div'); verseBox.className='banner'; verseBox.style.margin='12px 24px'; verseBox.style.fontSize='11px'; verseBox.textContent='THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1'; document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'))} else if(!toggleVerse.checked && verseBox){verseBox.remove(); verseBox=null}});
+toggleClock.addEventListener('change', ()=>{ localStorage.setItem('pref-clock', toggleClock.checked); document.getElementById('clock').style.display = toggleClock.checked? 'block':'none' });
+toggleVerse.addEventListener('change', ()=>{ localStorage.setItem('pref-verse', toggleVerse.checked);
+  if(toggleVerse.checked && !verseBox){
+    verseBox = document.createElement('div'); verseBox.className='banner'; verseBox.style.margin='12px 24px'; verseBox.style.fontSize='11px';
+    verseBox.textContent='THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1'; document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'));
+  } else if(!toggleVerse.checked && verseBox){ verseBox.remove(); verseBox=null; }
+});
 
-// ----------------- PROXY / DEPLOY BUTTON -----------------
+/* ----------------- PROXY / DEPLOY V3 (persistent + restore) ----------------- */
+/* NOTE: PROXY_URL can be preset to a known worker; if left blank, user is prompted */
 const deployBtn = document.getElementById('deploy-proxy-btn');
 const proxyOverlay = document.getElementById('proxy-overlay');
 const proxyIframe = document.getElementById('proxy-iframe');
 const proxyBack = document.getElementById('proxy-back');
-// target proxy URL (user-specified)
-const PROXY_URL = 'https://tkmafsenoo.coaching2lead.com';
 
-deployBtn.addEventListener('click', (e)=> {
-  e.stopPropagation();
-  // show overlay and load proxy (same tab takeover visually)
-  proxyIframe.src = PROXY_URL;
+// DEFAULT proxy URL you want to use automatically.
+// If you'd like to keep it prefilled, change PROXY_URL to your worker URL.
+// Example: const PROXY_URL = 'https://my-proxy.workers.dev/';
+const PROXY_URL = localStorage.getItem('proxy-default') || ''; // you can set by calling localStorage.setItem('proxy-default','https://...')
+
+function showProxy(url){
+  proxyIframe.src = url;
   proxyOverlay.style.display = 'flex';
   proxyOverlay.setAttribute('aria-hidden','false');
-  // optionally hide header/footer/panel interactions while proxy active
-  // (we keep them in DOM but visually behind the overlay)
+  document.body.style.overflow = 'hidden'; // prevent background scroll
+}
+
+// Deploy behavior: use default if present, otherwise prompt once.
+deployBtn.addEventListener('click', async (e)=> {
+  e.stopPropagation();
+  let url = PROXY_URL || localStorage.getItem('proxy-url') || '';
+  if(!url){
+    url = prompt('Enter deploy proxy URL (example: https://your-worker.workers.dev/)');
+    if(!url) return;
+    // save as last-used proxy
+    localStorage.setItem('proxy-url', url);
+  } else {
+    // if PROXY_URL was set in localStorage or constant, ensure saved
+    localStorage.setItem('proxy-url', url);
+  }
+  localStorage.setItem('proxy-active','1');
+  showProxy(url);
 });
 
+// Back button
 proxyBack.addEventListener('click', (e)=> {
   e.stopPropagation();
-  // hide overlay and clear iframe src to free resources
   proxyIframe.src = 'about:blank';
   proxyOverlay.style.display = 'none';
   proxyOverlay.setAttribute('aria-hidden','true');
+  document.body.style.overflow = ''; // restore scrolling
+  localStorage.removeItem('proxy-active');
+  // leave saved proxy-url intact so next time user doesn't need to re-enter
 });
 
-// also close proxy with Escape key
-document.addEventListener('keydown', (e)=> { if(e.key === 'Escape' && proxyOverlay.style.display === 'flex') { proxyBack.click(); }});
+// Restore on load if user had proxy open or saved proxy exists
+window.addEventListener('load', ()=>{
+  const wasActive = localStorage.getItem('proxy-active') === '1';
+  const saved = localStorage.getItem('proxy-url') || '';
+  if(wasActive && saved){
+    // small delay to ensure DOM fully ready
+    setTimeout(()=> showProxy(saved), 120);
+  }
+});
 
-// ----------------- INIT -----------------
+// Escape closes proxy
+document.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape' && proxyOverlay.style.display === 'flex'){
+    proxyBack.click();
+  }
+});
+
+/* ----------------- AUTH (signup/login) -----------------
+   Client-side only (demo): store username -> SHA-256(password).
+   This avoids storing plain passwords in localStorage.
+----------------------------------------------------- */
+
+const loginScreen = document.getElementById('login-screen');
+const signupScreen = document.getElementById('signup-screen');
+const showSignupBtn = document.getElementById('show-signup-btn');
+const showLoginBtn = document.getElementById('show-login-btn');
+const loginBtn = document.getElementById('login-btn');
+const createAccountBtn = document.getElementById('create-account-btn');
+
+function showSignup(){ loginScreen.style.display='none'; signupScreen.style.display='flex'; }
+function showLogin(){ signupScreen.style.display='none'; loginScreen.style.display='flex'; }
+
+showSignupBtn.addEventListener('click', showSignup);
+showLoginBtn.addEventListener('click', showLogin);
+
+async function sha256hex(str){
+  const enc = new TextEncoder();
+  const data = enc.encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const arr = Array.from(new Uint8Array(hash));
+  return arr.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function getAccounts(){ return JSON.parse(localStorage.getItem('accounts')||'{}') }
+
+createAccountBtn.addEventListener('click', async ()=>{
+  const u = document.getElementById('signup-username').value.trim();
+  const p = document.getElementById('signup-password').value;
+  if(!u || !p){ document.getElementById('signup-error').textContent='Fill username & password'; document.getElementById('signup-error').style.display='block'; return; }
+  const accounts = getAccounts();
+  if(accounts[u]){ document.getElementById('signup-error').textContent='Username already exists'; document.getElementById('signup-error').style.display='block'; return; }
+  const hash = await sha256hex(p);
+  accounts[u] = hash;
+  localStorage.setItem('accounts', JSON.stringify(accounts));
+  document.getElementById('signup-error').style.display='none';
+  alert('Account created. Please login.');
+  showLogin();
+});
+
+loginBtn.addEventListener('click', async ()=>{
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const accounts = getAccounts();
+  const hash = await sha256hex(p);
+  if(!accounts[u] || accounts[u] !== hash){ document.getElementById('login-error').style.display='block'; return; }
+  document.getElementById('login-error').style.display='none';
+  grantAccess();
+});
+
+function grantAccess(){
+  loginScreen.style.display='none';
+  signupScreen.style.display='none';
+  document.getElementById('access-granted').style.display='flex';
+  setTimeout(()=>{ document.getElementById('access-granted').style.display='none'; }, 1200);
+}
+
+/* ----------------- INIT ----------------- */
 (function init(){
- // apply prefs
- document.documentElement.style.setProperty('--neon-blue', prefs.neon);
- document.body.style.background = prefs.bg;
- neonInput.value = prefs.neon; bgInput.value = prefs.bg; bannerInput.value = prefs.banner; document.getElementById('custom-banner').textContent = prefs.banner;
- gridSize.value = prefs.grid; applyGrid();
- // render games
- renderGames();
+  // apply prefs
+  document.documentElement.style.setProperty('--neon-blue', prefs.neon);
+  document.body.style.background = prefs.bg;
+  neonInput.value = prefs.neon; bgInput.value = prefs.bg;
+  bannerInput.value = prefs.banner; document.getElementById('custom-banner').textContent = prefs.banner;
+  gridSize.value = prefs.grid; applyGrid();
+  renderGames();
 })();
 
-// ----------------- keyboard shortkeys (fun) -----------------
+/* ----------------- Shortcuts ----------------- */
 document.addEventListener('keydown', (e)=>{ if(e.key==='f'){ renderGames('favs') } if(e.key==='/'){ searchInput.focus() } });
 
-// LOGIN SYSTEM
-let accounts = JSON.parse(localStorage.getItem('accounts')||'{}');
-
-function showSignup(){
- document.getElementById('login-screen').style.display='none';
- document.getElementById('signup-screen').style.display='flex';
-}
-function showLogin(){
- document.getElementById('signup-screen').style.display='none';
- document.getElementById('login-screen').style.display='flex';
-}
-function attemptSignup(){
- const u=document.getElementById('signup-username').value.trim();
- const p=document.getElementById('signup-password').value.trim();
- if(accounts[u]){
-  document.getElementById('signup-error').style.display='block';
-  return;
- }
- accounts[u]=p;
- localStorage.setItem('accounts',JSON.stringify(accounts));
- showLogin();
-}
-function attemptLogin(){
- const u=document.getElementById('login-username').value.trim();
- const p=document.getElementById('login-password').value.trim();
- if(accounts[u]!==p){
-  document.getElementById('login-error').style.display='block';
-  return;
- }
- document.getElementById('login-error').style.display='none';
- grantAccess();
-}
-function grantAccess(){
- document.getElementById('login-screen').style.display='none';
- document.getElementById('signup-screen').style.display='none';
- document.getElementById('access-granted').style.display='flex';
- setTimeout(()=>{
-  document.getElementById('access-granted').style.display='none';
- },1200);
-}
-
+/* ----------------- End of script ----------------- */
 </script>
 </body>
 </html>
