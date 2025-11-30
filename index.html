@@ -1,575 +1,492 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>JACOB'S ARCADE V3</title>
+<title>JACOB'S ARCADE V3 — Full</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-:root{
-  --neon-blue:#00e6ff;
-  --neon-green:#7cff00;
-  --bg-color:#05030a;
-  --card-bg:rgba(255,255,255,0.02);
-  --text:#e6faff;
-  --muted: rgba(255,255,255,0.18);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;font-family:"Press Start 2P",Arial,sans-serif;color:var(--text);background:var(--bg-color);overflow-x:hidden}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.04);position:relative;z-index:30}
-.logo{width:48px;height:48px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-green));border-radius:8px;display:flex;align-items:center;justify-content:center;color:#001;font-weight:700}
-.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:24px}
-.game-card{background:var(--card-bg);padding:12px;border-radius:8px;text-align:center;border:1px solid rgba(255,255,255,0.03);transition:transform .15s,box-shadow .15s}
-.game-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 8px 24px rgba(0,200,255,0.06)}
-.card-buttons{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-button, .btn {
-  font-size:10px;padding:6px 8px;cursor:pointer;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--neon-blue);text-transform:uppercase;
-}
-.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
-#deploy-proxy-btn{
-  position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:40;padding:8px 14px;border-radius:10px;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));color:#001;font-weight:700;cursor:pointer;border:none;box-shadow:0 6px 18px rgba(0,0,0,0.4)
-}
-#proxy-overlay{
-  position:fixed;inset:0;background:#000;display:none;z-index:10000;align-items:stretch;justify-content:stretch;overflow:hidden
-}
-#proxy-iframe{width:100%;height:100%;border:0;background:white}
-#proxy-back{
-  position:fixed;left:12px;top:12px;z-index:11000;border-radius:8px;padding:8px 10px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.06);cursor:pointer;color:var(--neon-green)
-}
-#custom-panel{position:fixed;top:0;right:-360px;width:340px;height:100%;background:rgba(0,0,0,0.9);padding:18px;border-radius:10px 0 0 10px;box-shadow:-4px 0 20px rgba(0,0,0,0.5);transition:right .28s ease;z-index:1000}
-#custom-panel.open{right:0}
-.panel-section{margin-bottom:14px}
-.panel-section label{display:block;margin-bottom:6px;font-size:12px;color:var(--muted)}
-input[type=color],input[type=text],select{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:var(--text)}
-.small{font-size:11px;padding:4px}
-.loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:2000;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}
-.loading-overlay.show{opacity:1;pointer-events:auto}
-.loading-box{width:min(560px,92%);background:rgba(255,255,255,0.03);padding:18px;border-radius:10px;text-align:center;border:1px solid rgba(255,255,255,0.06)}
-.loading-message{font-size:12px;margin-bottom:12px}
-.progress{height:8px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}
-.progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon-blue),var(--neon-green));transition:width .2s}
-.header-row{display:flex;gap:12px;align-items:center}
-.search{margin:18px}
-.favorite{cursor:pointer;opacity:.95}
-.banner{padding:8px;background:linear-gradient(90deg,rgba(0,0,0,0.4),rgba(255,255,255,0.02));text-align:center;margin:12px 24px;border-radius:8px}
-.footer{padding:12px;text-align:center;font-size:12px;opacity:.9}
-.auth-box{display:flex;flex-direction:column;gap:8px;align-items:center}
-.auth-box input{width:260px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text)}
-.note{font-size:10px;color:var(--muted);margin-top:8px;text-align:center}
-
-/* ---- Logged-in look (from screenshot) ---- */
-body.logged-in {
-  background: radial-gradient(circle at 10% 10%, rgba(0,230,255,0.03), transparent 8%),
-              radial-gradient(circle at 90% 80%, rgba(124,255,0,0.02), transparent 12%),
-              var(--bg-color);
-}
-body.logged-in header { padding: 22px 36px; }
-body.logged-in .logo { width:64px; height:64px; font-size:20px; border-radius:12px; box-shadow:0 8px 30px rgba(0,230,255,0.06) }
-body.logged-in h1 { font-size:20px; letter-spacing:2px }
-body.logged-in #deploy-proxy-btn{
-  top:18px; padding:12px 22px; font-size:13px; border-radius:14px; box-shadow:0 8px 36px rgba(0,230,255,0.08), 0 0 0 3px rgba(0,230,255,0.03) inset;
-}
-body.logged-in .search input{
-  padding:14px 18px; font-size:13px; border-radius:12px; background: rgba(0,0,0,0.45); border:1px solid rgba(0,230,255,0.06); color:var(--neon-blue);
-}
-body.logged-in .games { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:18px; margin:28px 36px; }
-body.logged-in .game-card{ border-radius:12px; padding:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(0,230,255,0.05); box-shadow: 0 6px 22px rgba(0,0,0,0.6); }
-body.logged-in .card-buttons button{ padding:8px 10px; font-size:11px; border-radius:8px; background: rgba(0,0,0,0.5); color: var(--neon-blue); }
-body.logged-in .favorite.active { color: var(--neon-green); text-shadow:0 4px 12px rgba(124,255,0,0.08) }
-@media(max-width:880px){#custom-panel{width:86%}}
+  :root{
+    --bg:#05030a;
+    --panel:#0c0b11;
+    --neon:#00e6ff;
+    --neon-2:#7cff00;
+    --muted:rgba(255,255,255,0.14);
+    --glass: rgba(255,255,255,0.02);
+    --accent: linear-gradient(90deg,var(--neon),var(--neon-2));
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:"Press Start 2P",Arial,Helvetica,sans-serif;background:var(--bg);color:#e9fbff;overflow-x:hidden}
+  header{position:sticky;top:0;z-index:60;background:rgba(0,0,0,0.28);backdrop-filter:blur(4px);border-bottom:1px solid rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:space-between;padding:12px 18px}
+  .left-row{display:flex;align-items:center;gap:12px}
+  .logo{width:52px;height:52px;border-radius:10px;background:var(--accent);color:#001;display:flex;align-items:center;justify-content:center;font-weight:700}
+  h1{font-size:14px;margin:0;color:var(--neon)}
+  .top-controls{display:flex;align-items:center;gap:8px}
+  .btn{background:transparent;border:1px solid rgba(255,255,255,0.05);padding:8px 10px;border-radius:8px;color:var(--neon);cursor:pointer;font-size:11px}
+  .btn.ghost{color:var(--neon-2)}
+  #deploy-proxy-btn{position:relative;left:0;transform:none;padding:8px 14px;border-radius:12px;background:var(--accent);color:#001;border:none;cursor:pointer;box-shadow:0 8px 28px rgba(0,200,255,0.06)}
+  /* layout */
+  .container{display:grid;grid-template-columns:220px 1fr;gap:18px;padding:18px}
+  @media(max-width:980px){.container{grid-template-columns:1fr;padding:12px}}
+  /* sidebar */
+  .sidebar{background:var(--panel);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.02);height:calc(100vh - 110px);overflow:auto}
+  .profile{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .avatar{width:54px;height:54;border-radius:8px;background:var(--glass);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+  .profile h3{margin:0;font-size:12px;color:var(--neon)}
+  .category-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .category{padding:8px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.02);font-size:12px;color:var(--muted)}
+  .category.active{background:rgba(0,230,255,0.06);color:var(--neon)}
+  /* main */
+  .main{overflow:auto;padding-bottom:80px}
+  .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  #search-games{flex:1;min-width:240px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--neon);font-size:12px}
+  .small{font-size:11px;padding:6px 8px}
+  .banner{padding:10px;border-radius:10px;background:linear-gradient(90deg,rgba(0,0,0,0.4),rgba(255,255,255,0.02));text-align:center;margin-bottom:12px;color:var(--neon-2);font-size:11px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));border-radius:12px;padding:10px;border:1px solid rgba(255,255,255,0.03);transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(0,174,255,0.06)}
+  .thumb{width:100%;height:110px;border-radius:8px;display:block;object-fit:cover;background:#0b0b0f}
+  .title{font-size:11px;margin:8px 0;color:var(--neon)}
+  .card-ctrls{display:flex;gap:8px;flex-wrap:wrap}
+  .tiny{font-size:10px;padding:6px 7px;border-radius:8px}
+  .fav{position:absolute;right:8px;top:8px;font-size:14px;cursor:pointer}
+  .tag{display:inline-block;padding:4px 8px;border-radius:8px;font-size:10px;color:var(--muted);border:1px solid rgba(255,255,255,0.02);margin-right:6px}
+  /* overlays */
+  #loading-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.78);z-index:4000}
+  #proxy-overlay{position:fixed;inset:0;display:none;flex-direction:column;z-index:5000}
+  #proxy-iframe{flex:1;border:0}
+  #proxy-topbar{height:44px;background:rgba(0,0,0,0.6);display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+  #cloak-overlay{position:fixed;inset:0;display:none;z-index:7000;background:#f6f6f6;color:#111;align-items:flex-start}
+  .doc-header{height:60px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;gap:12px;padding:12px}
+  .doc-input{width:320px;padding:8px;border-radius:6px;border:1px solid #ddd}
+  .help{font-size:11px;color:#444;margin-left:12px}
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:11px}
+  /* animations */
+  @keyframes neonPulse {0%{box-shadow:0 0 6px rgba(0,230,255,0.08)}50%{box-shadow:0 0 20px rgba(0,230,255,0.12)}100%{box-shadow:0 0 6px rgba(0,230,255,0.08)}}
+  .logo{animation:neonPulse 3s infinite}
 </style>
 </head>
 <body>
+
 <header>
-  <div class="header-row">
+  <div class="left-row">
     <div class="logo">J²</div>
     <div>
-      <h1 style="font-size:16px;color:var(--neon-blue);letter-spacing:1px">JACOB'S ARCADE V3</h1>
-      <div id="banner-text" style="font-size:10px;color:var(--neon-green);text-transform:uppercase">WELCOME</div>
+      <h1>JACOB'S ARCADE V3</h1>
+      <div style="font-size:10px;color:var(--muted)">NEON BLUE HOME</div>
     </div>
   </div>
 
-  <div class="header-row" style="gap:10px;">
-    <div id="clock" style="font-size:12px;color:var(--neon-green);text-transform:uppercase">00:00:00</div>
-    <button id="customize-btn" class="btn">CUSTOMIZE</button>
+  <div class="top-controls">
+    <div id="clock" style="font-size:11px;color:var(--neon-2);min-width:86px;text-align:center">00:00:00</div>
+    <button id="deploy-proxy-btn" title="Deploy Proxy">DEPLOY PROXY</button>
+    <button id="cloak-btn" class="btn small">CLOAK</button>
+    <button id="customize-btn" class="btn small">CUSTOMIZE</button>
+    <button id="login-toggle" class="btn small">LOGIN</button>
   </div>
 </header>
 
-<!-- Deploy Proxy Button (center top) -->
-<button id="deploy-proxy-btn" title="Deploy Proxy">DEPLOY PROXY</button>
+<div class="container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="profile">
+      <div class="avatar" id="avatar">J</div>
+      <div>
+        <h3 id="profile-name">Guest</h3>
+        <div style="font-size:10px;color:var(--muted)">Local demo account</div>
+      </div>
+    </div>
 
-<!-- Proxy overlay (hidden until deploy clicked) -->
-<div id="proxy-overlay" aria-hidden="true">
-  <button id="proxy-back" title="Back to Arcade">← BACK</button>
-  <iframe id="proxy-iframe" src="" frameborder="0" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
-</div>
+    <div style="margin-top:8px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">CATEGORIES</div>
+      <div class="category-list" id="category-list"></div>
+    </div>
 
-<!-- LOGIN + SIGNUP OVERLAY -->
-<div id="login-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:5000;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
- <div style="text-align:center;">
-   <h2 style="margin-bottom:14px;">LOGIN</h2>
-   <div class="auth-box">
-     <input id="login-username" type="text" placeholder="USERNAME">
-     <input id="login-password" type="password" placeholder="PASSWORD">
-     <div style="display:flex;gap:8px;margin-top:6px">
-       <button id="login-btn" class="btn">LOGIN</button>
-       <button id="show-signup-btn" class="btn">SIGN UP</button>
-     </div>
-     <div id="login-error" style="color:#ff6b6b;font-size:12px;margin-top:8px;display:none;">Wrong username or password</div>
-     <div class="note">Local-only demo auth (passwords hashed client-side)</div>
-   </div>
- </div>
-</div>
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">FAVORITES</div>
+      <div id="fav-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
 
-<div id="signup-screen" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:5000;display:none;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:'Press Start 2P';">
- <div style="text-align:center;">
-   <h2 style="margin-bottom:14px;">SIGN UP</h2>
-   <div class="auth-box">
-     <input id="signup-username" type="text" placeholder="CREATE USERNAME">
-     <input id="signup-password" type="password" placeholder="CREATE PASSWORD">
-     <div style="display:flex;gap:8px;margin-top:6px">
-       <button id="create-account-btn" class="btn">CREATE</button>
-       <button id="show-login-btn" class="btn">BACK</button>
-     </div>
-     <div id="signup-error" style="color:#ff6b6b;font-size:12px;margin-top:8px;display:none;">Username already exists</div>
-     <div class="note">Passwords are hashed with SHA-256 before saving (client-side)</div>
-   </div>
- </div>
-</div>
+    <div style="margin-top:14px;font-size:11px;color:var(--muted)">
+      <div style="margin-bottom:8px">PROXY SETTINGS</div>
+      <input id="proxy-url-input" placeholder="Proxy URL (worker)" style="width:100%;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--neon);font-size:12px">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="save-proxy" class="btn small">Save</button>
+        <button id="clear-proxy" class="btn small">Clear</button>
+      </div>
+      <div style="margin-top:12px;font-size:10px;color:var(--muted)">Proxy persists after refresh if saved.</div>
+    </div>
 
-<div id="access-granted" style="position:fixed;inset:0;background:black;z-index:6000;color:lime;font-family:'Press Start 2P';display:none;align-items:center;justify-content:center;font-size:22px;">
- ACCESS GRANTED
-</div>
+  </aside>
 
-<div class="banner" id="custom-banner">Press PLAY to start a game — loading messages are chaotic!</div>
-
-<div style="display:flex;gap:18px">
-  <div style="flex:1">
-    <div class="search"><input id="search-games" type="text" placeholder="SEARCH GAMES..." style="width:100%;padding:8px;border-radius:6px"></div>
-    <div class="games" id="games"></div>
-  </div>
-
-  <div id="custom-panel">
-    <h3 style="color:var(--neon-green);margin-bottom:12px">CUSTOMIZE</h3>
-    <div class="panel-section">
-      <label>Theme Presets</label>
-      <select id="theme-preset">
-        <option value="neon">Neon (default)</option>
-        <option value="retro">Retro</option>
-        <option value="sunset">Sunset</option>
+  <!-- MAIN -->
+  <main class="main">
+    <div class="controls">
+      <input id="search-games" placeholder="SEARCH GAMES..." />
+      <select id="category-filter" class="small">
+        <option value="">All Categories</option>
       </select>
+      <button id="show-faves" class="btn small">Show Favorites</button>
+      <button id="clear-faves" class="btn small">Clear Favorites</button>
+      <button id="cloak-quick" class="btn ghost small">Quick Cloak</button>
     </div>
-    <div class="panel-section">
-      <label>Neon Color</label>
-      <input type="color" id="neon-color" value="#00e6ff">
+
+    <div class="banner" id="custom-banner">Press PLAY to start a game — loading messages are chaotic!</div>
+
+    <div class="grid" id="games-grid"></div>
+  </main>
+</div>
+
+<!-- LOADING -->
+<div id="loading-overlay"><div style="background:rgba(255,255,255,0.02);padding:18px;border-radius:8px;border:1px solid rgba(255,255,255,0.04)"><div id="loading-msg">Loading...</div></div></div>
+
+<!-- PROXY OVERLAY -->
+<div id="proxy-overlay" style="display:none;flex-direction:column">
+  <div id="proxy-topbar">
+    <button id="proxy-back" class="btn small">← BACK</button>
+    <div style="flex:1"></div>
+    <div style="font-size:12px;color:var(--muted)">Proxy view</div>
+    <div style="width:12px"></div>
+  </div>
+  <iframe id="proxy-iframe" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+</div>
+
+<!-- CLOAK (Google Docs style fake overlay) -->
+<div id="cloak-overlay" style="display:none;flex-direction:column">
+  <div class="doc-header">
+    <div style="font-weight:700;color:#1a73e8">Docs — Jacob's Arcade</div>
+    <input class="doc-input" value="Untitled document" />
+    <div class="help">Auto-saved • All changes saved</div>
+    <div style="flex:1"></div>
+    <button id="cloak-close" class="btn small">Return</button>
+  </div>
+  <iframe src="about:blank" style="flex:1;border:0"></iframe>
+</div>
+
+<!-- LOGIN / SIGNUP -->
+<div id="login-screen" style="position:fixed;inset:0;display:none;background:rgba(0,0,0,0.92);z-index:8000;align-items:center;justify-content:center">
+  <div style="background:#0b0b0d;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);width:340px;text-align:center">
+    <h3 style="margin:6px 0;color:var(--neon)">Login</h3>
+    <input id="login-username" placeholder="username" style="width:100%;padding:8px;margin-top:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--neon)">
+    <input id="login-password" placeholder="password" type="password" style="width:100%;padding:8px;margin-top:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--neon)">
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+      <button id="login-btn" class="btn small">LOGIN</button>
+      <button id="show-signup" class="btn small">SIGNUP</button>
     </div>
-    <div class="panel-section">
-      <label>Background Color</label>
-      <input type="color" id="bg-color" value="#05030a">
-    </div>
-    <div class="panel-section">
-      <label>Grid Size</label>
-      <select id="grid-size"><option value="small">Small cards</option><option value="medium" selected>Medium cards</option><option value="large">Large cards</option></select>
-    </div>
-    <div class="panel-section">
-      <label><input type="checkbox" id="toggle-clock" checked> Show Live Clock</label>
-      <label><input type="checkbox" id="toggle-verse" checked> Show Verse Box</label>
-    </div>
-    <div class="panel-section">
-      <label>Custom Banner Text</label>
-      <input type="text" id="banner-input" placeholder="Type a banner message...">
-      <button id="save-banner" class="small">Save Banner</button>
-    </div>
-    <div class="panel-section">
-      <label>Favorites</label>
-      <div style="font-size:12px">Click the ⭐ on any game card to favorite it. Use the filter below.</div>
-      <button id="show-faves" class="small">Show Favorites</button>
-      <button id="clear-faves" class="small">Clear Favorites</button>
-    </div>
-    <div class="panel-section">
-      <label>Reset to defaults</label>
-      <button id="reset-prefs" class="small">RESET</button>
-    </div>
+    <div id="login-error" style="display:none;color:#ff6b6b;margin-top:8px;font-size:12px"></div>
   </div>
 </div>
 
-<div class="loading-overlay" id="loading-overlay" aria-hidden="true">
-  <div class="loading-box" role="status" aria-live="polite">
-    <div class="loading-message" id="loading-message">Loading...</div>
-    <div class="progress"><i id="loading-bar"></i></div>
-    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.7)">This sometimes takes 0.5–3s (simulated)</div>
+<div id="signup-screen" style="position:fixed;inset:0;display:none;background:rgba(0,0,0,0.92);z-index:8000;align-items:center;justify-content:center">
+  <div style="background:#0b0b0d;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);width:340px;text-align:center">
+    <h3 style="margin:6px 0;color:var(--neon)">Sign Up</h3>
+    <input id="signup-username" placeholder="username" style="width:100%;padding:8px;margin-top:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--neon)">
+    <input id="signup-password" placeholder="password" type="password" style="width:100%;padding:8px;margin-top:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--neon)">
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+      <button id="create-account" class="btn small">CREATE</button>
+      <button id="back-login" class="btn small">BACK</button>
+    </div>
+    <div id="signup-error" style="display:none;color:#ff6b6b;margin-top:8px;font-size:12px"></div>
   </div>
 </div>
 
-<div class="footer">FOLLOW — YOUTUBE / TWITCH / TIKTOK</div>
+<footer>FOLLOW — YOUTUBE / TWITCH / TIKTOK</footer>
 
 <script>
-/* ----------------- CORE DATA ----------------- */
+/* ----------------- GAME LIST (from user filenames) ----------------- */
 const GAME_FILES = [
 "1v1lol.html","amanda.html","aquapark.html","bad-parenting-1.html","baldis-basics.html",
 "baseball-bros.html","basket-bros.html","bitlife.html","block-blast.html","bowmasters.html",
 "buildnow.gg.html","clash-of-vikings.html","cuphead-1.html","do-not-take-this-cat-home.html",
 "fears-to-fathom-home-alone.html","flip-master.html","football-bros.html","friday-night-funkin.html",
-"justfall.lol.html","kindergarten.html","kindergarten-2.html","kindergarten-3.html",
-"minecraft-1.21.4.html","retro-bowl.html","run-1.html","run-2.html","run-3.html",
-"schoolboy-runaway.html","slither.io.html","slope.html","sonic-mania.html",
-"sonic-the-hedgehog-2-communitys-cut.html","sonic-the-hedgehog-3-angel-island-remastered.html",
+"justfall.lol.html","kindergarten-2.html","kindergarten-3.html","kindergarten.html","minecraft-1.21.4.html",
+"retro-bowl.html","run-1.html","run-2.html","run-3.html","schoolboy-runaway.html","slither.io.html",
+"slope.html","sonic-mania.html","sonic-the-hedgehog-2-communitys-cut.html","sonic-the-hedgehog-3-angel-island-remastered.html",
 "sonic.exe.html","steal-brainrot-online.html","stickman-fight-ragdoll.html","stickman-hook.html",
 "subway-surfers-barcelona.html","super-mario-bros.html","supreme-duelists.html"
 ];
 
-const LOADING_MESSAGES = [
-"Loading... bruh the hamster fell off the wheel","Game is booting up... it’s lagging like your WiFi",
-"Hold on, the pixels are arguing again","Loading... your PC is crying but it’ll be okay",
-"Bringing snacks for the CPU","Summoning the joystick spirits","Polishing the high scores",
-"Tightening sprites' shoelaces","Applying duct tape to the physics engine","Feeding the binary hamsters",
-"Charging the fun capacitor","Warming up the magenta pixels","Checking for missing semicolons",
-"Negotiating with the browser for extra RAM","Borrowing energy from Pluto","Asking the clouds for frames per second",
-"Whispering to the WASM gods","Convincing the fonts to cooperate","Debugging with a rubber chicken",
-"Loading... the snail courier is almost there","Tuning the retro synths","Infusing code with extra vibes",
-"Making sure the hero has a cool hat","Applying anti-glitch stickers","Rebooting the imagination module",
-"Searching for lost pixels","Shouting encouragement at the CPU","Packing parachutes for sprites",
-"Latent meme retrieval in progress","Adjusting gravity to moderate","Upgrading the fun meter to max",
-"One moment while we summon the fun!"
-];
+/* ----------------- HELPERS ----------------- */
+function qsel(s){return document.querySelector(s)}
+function qall(s){return Array.from(document.querySelectorAll(s))}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+function pad(n){return n.toString().padStart(2,'0')}
 
-/* ----------------- UTILS ----------------- */
-function randFrom(arr){ return arr[Math.floor(Math.random()*arr.length)] }
-function wait(ms){ return new Promise(r=>setTimeout(r,ms)) }
+/* ----------------- THUMBNAIL GENERATOR (SVG data URL) ----------------- */
+function makeThumb(title){
+  const bg = '#071019';
+  const c = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='600' height='360'>
+    <defs><linearGradient id='g' x1='0' x2='1'><stop offset='0' stop-color='#00e6ff'/><stop offset='1' stop-color='#7cff00'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='${bg}' rx='8'/>
+    <text x='50%' y='46%' fill='white' font-family='Press Start 2P, Arial' font-size='24' dominant-baseline='middle' text-anchor='middle' fill-opacity='0.95'>${escapeHtml(shorten(title,26))}</text>
+    <rect x='0' y='270' width='100%' height='90' fill='url(#g)' fill-opacity='0.08'/>
+  </svg>`);
+  return `data:image/svg+xml;charset=utf-8,${c}`;
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function shorten(s,n){ if(s.length<=n) return s; return s.slice(0,n-1)+'…' }
+function fileToTitle(fn){ return fn.replace(/\.html?$/i,'').replace(/[-_.]/g,' ').toUpperCase() }
 
-/* ----------------- PERSISTENCE / PREFS ----------------- */
+/* ----------------- CATEGORIES heuristic ----------------- */
+const CATS = { 'Platform':[], 'Arcade':[], 'Sports':[], 'Sim':[], 'Rhythm':[], 'Action':[], 'Other':[] };
+function assignCategory(fn){
+  const lower = fn.toLowerCase();
+  if(/sonic|mario|cuphead|minecraft|super|sonic-man/i.test(lower)) return 'Platform';
+  if(/run|slope|slither|justfall|flip|stickman|stickman-hook|block-blast|1v1lol|steal|schoolboy/i.test(lower)) return 'Arcade';
+  if(/football|baseball|retro-bowl|basket|subway-surfers/i.test(lower)) return 'Sports';
+  if(/bitlife|buildnow|minecraft|buildnow.gg/i.test(lower)) return 'Sim';
+  if(/friday|fnaf|fears|rhythm|funkin/i.test(lower)) return 'Rhythm';
+  if(/clash|bowmasters|supreme|sonic.exe|bad-parenting|steal|fight|hook/i.test(lower)) return 'Action';
+  return 'Other';
+}
+
+/* ----------------- PERSISTENCE ----------------- */
 const prefs = {
-  neon: localStorage.getItem('pref-neon') || '#00e6ff',
-  bg: localStorage.getItem('pref-bg') || '#05030a',
-  banner: localStorage.getItem('pref-banner') || 'Welcome to the arcade!',
-  grid: localStorage.getItem('pref-grid') || 'medium',
-  showClock: localStorage.getItem('pref-clock')==='false'?false:true,
-  showVerse: localStorage.getItem('pref-verse')==='false'?false:true,
-  favs: JSON.parse(localStorage.getItem('pref-favs')||'[]')
+  favs: JSON.parse(localStorage.getItem('pref-favs')||'[]'),
+  neon: localStorage.getItem('pref-neon')||'#00e6ff',
+  proxyUrl: localStorage.getItem('proxy-url')||'https://tkmafsenoo.coaching2lead.com',
+  proxyActive: localStorage.getItem('proxy-active')==='1'
 }
 
-/* ----------------- RENDERING ----------------- */
-const gamesDiv = document.getElementById('games');
+/* ----------------- RENDER / INIT ----------------- */
+const grid = qsel('#games-grid');
+const catListEl = qsel('#category-list');
+const categoryFilter = qsel('#category-filter');
 
-function buildCard(fname){
-  const card = document.createElement('div');
-  card.className='game-card';
-  const title = fname.replace(/\.html$/,'').replace(/[-\.]/g,' ').toUpperCase();
-  const id = fname;
-  const star = document.createElement('span');
-  star.innerHTML = prefs.favs.includes(id)?'⭐':'☆';
-  star.className='favorite';
-  star.title='Toggle favorite';
-  star.style.marginLeft='6px';
-  star.onclick = (e)=>{ e.stopPropagation(); toggleFav(id); star.innerHTML = prefs.favs.includes(id)?'⭐':'☆'; star.classList.toggle('active', prefs.favs.includes(id)); };
-  card.innerHTML = `<div style="font-size:12px">${title}</div>`;
-  const btns = document.createElement('div'); btns.className='card-buttons';
+function buildCatalog(){
+  // classify files into objects
+  const items = GAME_FILES.map(fn=>{
+    const title = fileToTitle(fn);
+    const cat = assignCategory(fn) || 'Other';
+    return {file:fn,title,cat,thumb:makeThumb(title)}
+  });
+  // group cats
+  Object.keys(CATS).forEach(k=>CATS[k]=[]);
+  items.forEach(it=>CATS[it.cat] ? CATS[it.cat].push(it) : (CATS.Other.push(it)));
+  return items;
+}
+let CATALOG = buildCatalog();
 
-  const play = document.createElement('button'); play.textContent='PLAY';
-  play.onclick = ()=> { window.location.href = id; }; // same-tab
-
-  const openBlank = document.createElement('button'); openBlank.textContent='ABOUT:BLANK';
-  openBlank.onclick = async (e)=> {
-    e.stopPropagation();
-    try {
-      const w = window.open('about:blank');
-      if(!w) { alert('Popup blocked. Allow popups for this site.'); return; }
-      const res = await fetch(id);
-      const txt = await res.text();
-      const blob = new Blob([txt], {type:'text/html'});
-      const blobUrl = URL.createObjectURL(blob);
-      const doc = w.document;
-      doc.open();
-      doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>html,body{height:100%;margin:0;background:#000}iframe{border:0;width:100%;height:100%}</style></head><body><iframe src="${blobUrl}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe></body></html>`);
-      doc.close();
-    } catch(err){ console.error(err); alert('Failed to open ABOUT:BLANK'); }
-  };
-
-  const blob = document.createElement('button'); blob.textContent='BLOB LINK';
-  blob.onclick = ()=> fetch(id).then(r=>r.text()).then(t=>{const blob2=new Blob([t],{type:'text/html'});window.open(URL.createObjectURL(blob2),'_blank')});
-
-  btns.append(play,openBlank,blob);
-  card.appendChild(btns);
-  card.appendChild(star);
-  return card;
+function renderCategories(){
+  catListEl.innerHTML=''; categoryFilter.innerHTML='<option value="">All Categories</option>';
+  Object.keys(CATS).forEach(cat=>{
+    const btn = document.createElement('div');
+    btn.className='category';
+    btn.textContent = `${cat} (${CATS[cat].length})`;
+    btn.onclick = ()=> { qall('.category').forEach(x=>x.classList.remove('active')); btn.classList.add('active'); renderGames(cat); }
+    catListEl.appendChild(btn);
+    const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; categoryFilter.appendChild(opt);
+  });
 }
 
-function renderGames(filter=''){
-  gamesDiv.innerHTML='';
-  let list = GAME_FILES.slice();
-  if(filter==='favs') list = list.filter(x=>prefs.favs.includes(x));
-  else if(filter && typeof filter === 'string' && filter.trim()!=='') list = list.filter(f=>f.toLowerCase().includes(filter.toLowerCase()));
-  list.forEach(f=> gamesDiv.appendChild(buildCard(f)));
-  applyGrid();
-  // mark favorite stars visually
-  document.querySelectorAll('.game-card').forEach(card=>{
-    const titleTxt = card.querySelector('div').textContent.trim().toLowerCase().replace(/\s+/g,'-') + '.html';
-    const star = card.querySelector('.favorite');
-    if(prefs.favs.includes(titleTxt)) star.classList.add('active'); else star.classList.remove('active');
+function renderGames(filter='',search=''){
+  grid.innerHTML='';
+  let list = CATALOG.slice();
+  if(filter && filter!=='') list = list.filter(it=>it.cat===filter);
+  if(search && search.trim()!=='') list = list.filter(it=>it.title.toLowerCase().includes(search.toLowerCase()));
+  // if show favorites mode
+  if(filter==='__FAVS__') list = list.filter(it=> prefs.favs.includes(it.file));
+  list.forEach(it=>{
+    const card = document.createElement('div'); card.className='card';
+    const fav = document.createElement('div'); fav.className='fav'; fav.title='Toggle favorite';
+    fav.innerHTML = prefs.favs.includes(it.file)?'⭐':'☆';
+    fav.onclick = (e)=>{ e.stopPropagation(); toggleFav(it.file); fav.innerHTML = prefs.favs.includes(it.file)?'⭐':'☆'; renderFavList(); };
+    const img = document.createElement('img'); img.className='thumb'; img.src = it.thumb; img.alt = it.title;
+    const title = document.createElement('div'); title.className='title'; title.textContent = it.title;
+    const tags = document.createElement('div'); tags.innerHTML = `<span class="tag">${it.cat}</span>`;
+    const ctrls = document.createElement('div'); ctrls.className='card-ctrls';
+    const play = document.createElement('button'); play.className='tiny btn'; play.textContent='PLAY';
+    play.onclick = ()=> playGame(it.file);
+    const pop = document.createElement('button'); pop.className='tiny btn'; pop.textContent='POP-OUT';
+    pop.onclick = (e)=> { e.stopPropagation(); openAboutBlank(it.file, it.title); };
+    const cloakBtn = document.createElement('button'); cloakBtn.className='tiny btn ghost'; cloakBtn.textContent='CLOAK';
+    cloakBtn.onclick = ()=> quickCloak();
+    ctrls.append(play, pop, cloakBtn);
+    card.appendChild(fav); card.appendChild(img); card.appendChild(title); card.appendChild(tags); card.appendChild(ctrls);
+    grid.appendChild(card);
+  });
+  if(list.length===0){
+    grid.innerHTML = `<div style="color:var(--muted);padding:30px;font-size:12px">No games found</div>`;
+  }
+}
+
+function renderFavList(){
+  const out = qsel('#fav-list'); out.innerHTML='';
+  prefs.favs.forEach(fn=>{
+    const title = fileToTitle(fn);
+    const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center';
+    el.style.padding='6px'; el.style.borderRadius='6px'; el.style.fontSize='12px'; el.style.border='1px solid rgba(255,255,255,0.02)';
+    el.innerHTML = `<div>${title}</div><div style="display:flex;gap:6px"><button class="btn small" onclick="playGame('${fn}')">PLAY</button><button class="btn small" onclick="toggleFav('${fn}');renderFavList();renderGames();">REMOVE</button></div>`;
+    out.appendChild(el);
   });
 }
 
 /* ----------------- FAVORITES ----------------- */
-function toggleFav(id){
-  if(!prefs.favs.includes(id)) prefs.favs.push(id); else prefs.favs = prefs.favs.filter(x=>x!==id);
-  localStorage.setItem('pref-favs',JSON.stringify(prefs.favs));
+function toggleFav(fn){
+  if(!prefs.favs.includes(fn)) prefs.favs.push(fn);
+  else prefs.favs = prefs.favs.filter(x=>x!==fn);
+  localStorage.setItem('pref-favs', JSON.stringify(prefs.favs));
+  renderGames(categoryFilter.value || '');
 }
 
-/* ----------------- LOADING + PLAY UI ----------------- */
-const overlay = document.getElementById('loading-overlay');
-const msgEl = document.getElementById('loading-message');
-const bar = document.getElementById('loading-bar');
-
-async function playGame(filename){
-  overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
-  const randomMsg = randFrom(LOADING_MESSAGES);
-  msgEl.textContent = randomMsg;
-  let pct = 0; bar.style.width='0%';
-  const duration = 800 + Math.random()*2200;
-  const start = Date.now();
-  while(Date.now()-start < duration){
-    const t = (Date.now()-start)/duration;
-    pct = Math.min(100, Math.floor( (Math.sin(t*Math.PI/2)*0.9 + t*0.1) * 100 ));
-    bar.style.width = pct + '%';
-    await wait(80);
-  }
-  bar.style.width='100%';
-  await wait(200);
-  overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
-  window.location.href = filename;
+/* ----------------- PLAY / LOADING / ABOUT:BLANK ----------------- */
+const loadingOverlay = qsel('#loading-overlay');
+async function playGame(url){
+  // show loading then navigate in same tab
+  qsel('#loading-msg').textContent = 'Starting game...';
+  loadingOverlay.style.display='flex';
+  await wait(700 + Math.random()*800);
+  loadingOverlay.style.display='none';
+  window.location.href = url;
 }
 
-/* ----------------- CUSTOMIZATION BEHAVIOR ----------------- */
-const customizeBtn = document.getElementById('customize-btn');
-const customPanel = document.getElementById('custom-panel');
-customizeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); customPanel.classList.toggle('open') });
-document.addEventListener('click', (e)=> { if(!customPanel.contains(e.target) && e.target !== customizeBtn) customPanel.classList.remove('open') });
-
-const neonInput = document.getElementById('neon-color');
-const bgInput = document.getElementById('bg-color');
-const preset = document.getElementById('theme-preset');
-const gridSize = document.getElementById('grid-size');
-const toggleClock = document.getElementById('toggle-clock');
-const toggleVerse = document.getElementById('toggle-verse');
-const bannerInput = document.getElementById('banner-input');
-const saveBanner = document.getElementById('save-banner');
-const showFaves = document.getElementById('show-faves');
-const clearFaves = document.getElementById('clear-faves');
-const resetPrefs = document.getElementById('reset-prefs');
-
-neonInput.addEventListener('input', ()=>{ document.documentElement.style.setProperty('--neon-blue', neonInput.value); localStorage.setItem('pref-neon',neonInput.value) });
-bgInput.addEventListener('input', ()=>{ document.documentElement.style.setProperty('--bg-color', bgInput.value); document.body.style.background = bgInput.value; localStorage.setItem('pref-bg',bgInput.value) });
-
-preset.addEventListener('change', ()=>{
-  const v = preset.value;
-  if(v==='neon'){ neonInput.value='#00e6ff'; bgInput.value='#05030a'; }
-  if(v==='retro'){ neonInput.value='#ff6ec7'; bgInput.value='#101013'; }
-  if(v==='sunset'){ neonInput.value='#ff9a3c'; bgInput.value='#201220'; }
-  neonInput.dispatchEvent(new Event('input')); bgInput.dispatchEvent(new Event('input'));
-});
-
-gridSize.addEventListener('change', applyGrid);
-function applyGrid(){
-  const g = gridSize.value;
-  if(g==='small') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(140px,1fr))';
-  if(g==='medium') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(180px,1fr))';
-  if(g==='large') gamesDiv.style.gridTemplateColumns='repeat(auto-fill,minmax(240px,1fr))';
-  localStorage.setItem('pref-grid',g);
+async function openAboutBlank(url,title){
+  try{
+    const w = window.open('about:blank');
+    if(!w) return alert('Popup blocked. Allow popups for this site.');
+    // fetch file text and pop into blob so relative assets remain local-friendly
+    const res = await fetch(url).catch(()=>null);
+    let content = '';
+    if(res && res.ok){ content = await res.text(); const blob = new Blob([content],{type:'text/html'}); const burl = URL.createObjectURL(blob); w.document.write(`<iframe src="${burl}" style="width:100vw;height:100vh;border:none"></iframe>`); w.document.close(); }
+    else { w.document.write(`<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial">Could not load ${title}</div>`); w.document.close(); }
+  }catch(err){ console.error(err); alert('Failed to open pop-out'); }
 }
 
-saveBanner.addEventListener('click', ()=>{ const t=bannerInput.value.trim(); if(t){ document.getElementById('custom-banner').textContent = t; localStorage.setItem('pref-banner',t); }});
-showFaves.addEventListener('click', ()=> renderGames('favs'));
-clearFaves.addEventListener('click', ()=>{ prefs.favs=[]; localStorage.setItem('pref-favs','[]'); renderGames(); });
-resetPrefs.addEventListener('click', ()=>{ localStorage.clear(); location.reload(); });
+/* ----------------- PROXY (deploy) ----------------- */
+const proxyOverlay = qsel('#proxy-overlay');
+const proxyIframe = qsel('#proxy-iframe');
+const proxyBtn = qsel('#deploy-proxy-btn');
+const proxyUrlInput = qsel('#proxy-url-input');
+const saveProxyBtn = qsel('#save-proxy');
+const clearProxyBtn = qsel('#clear-proxy');
+const proxyBack = qsel('#proxy-back');
 
-/* ----------------- SEARCH ----------------- */
-const searchInput = document.getElementById('search-games');
-searchInput.addEventListener('input', ()=>{ renderGames(searchInput.value) });
+proxyUrlInput.value = prefs.proxyUrl || '';
 
-/* ----------------- CLOCK & VERSE ----------------- */
-function pad(n){ return n.toString().padStart(2,'0') }
-function updateClock(){ const now=new Date(); document.getElementById('clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}` }
-setInterval(updateClock,1000); updateClock();
-
-let verseBox = null;
-if(prefs.showVerse){
-  verseBox = document.createElement('div');
-  verseBox.className='banner';
-  verseBox.style.margin='12px 24px';
-  verseBox.style.fontSize='11px';
-  verseBox.textContent = 'THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1';
-  document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'));
-}
-
-toggleClock.checked = prefs.showClock; toggleVerse.checked = prefs.showVerse;
-toggleClock.addEventListener('change', ()=>{ localStorage.setItem('pref-clock', toggleClock.checked); document.getElementById('clock').style.display = toggleClock.checked? 'block':'none' });
-toggleVerse.addEventListener('change', ()=>{ localStorage.setItem('pref-verse', toggleVerse.checked);
-  if(toggleVerse.checked && !verseBox){
-    verseBox = document.createElement('div'); verseBox.className='banner'; verseBox.style.margin='12px 24px'; verseBox.style.fontSize='11px';
-    verseBox.textContent='THE LORD IS MY SHEPHERD; I SHALL NOT WANT - PSALM 23:1'; document.querySelector('body').insertBefore(verseBox, document.querySelector('.footer'));
-  } else if(!toggleVerse.checked && verseBox){ verseBox.remove(); verseBox=null; }
-});
-
-/* ----------------- PROXY / DEPLOY V3 (persistent + restore) ----------------- */
-const deployBtn = document.getElementById('deploy-proxy-btn');
-const proxyOverlay = document.getElementById('proxy-overlay');
-const proxyIframe = document.getElementById('proxy-iframe');
-const proxyBack = document.getElementById('proxy-back');
-
-// Use saved proxy-url or prompt on first use.
-// Saves last used URL in localStorage 'proxy-url'; saves active state in 'proxy-active' (so the overlay is restored across refresh)
 function showProxy(url){
   proxyIframe.src = url;
-  proxyOverlay.style.display = 'flex';
-  proxyOverlay.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
+  proxyOverlay.style.display='flex';
+  document.body.style.overflow='hidden';
+  localStorage.setItem('proxy-active','1');
+  prefs.proxyActive = true;
 }
 
-deployBtn.addEventListener('click', async (e)=> {
-  e.stopPropagation();
-  let url = localStorage.getItem('proxy-url') || '';
+proxyBtn.addEventListener('click', ()=>{
+  let url = proxyUrlInput.value.trim() || prefs.proxyUrl || '';
   if(!url){
-    url = prompt('Enter deploy proxy URL (example: https://your-worker.workers.dev/)');
+    url = prompt('Enter proxy/worker URL (https://...)') || '';
     if(!url) return;
-    localStorage.setItem('proxy-url', url);
+    proxyUrlInput.value = url;
   }
-  localStorage.setItem('proxy-active','1');
+  localStorage.setItem('proxy-url', url);
+  prefs.proxyUrl = url;
   showProxy(url);
 });
 
-proxyBack.addEventListener('click', (e)=> {
-  e.stopPropagation();
+proxyBack.addEventListener('click', ()=>{
   proxyIframe.src = 'about:blank';
-  proxyOverlay.style.display = 'none';
-  proxyOverlay.setAttribute('aria-hidden','true');
-  document.body.style.overflow = '';
+  proxyOverlay.style.display='none';
+  document.body.style.overflow='';
   localStorage.removeItem('proxy-active');
+  prefs.proxyActive = false;
 });
 
-// Restore on load if user had proxy active before refresh
+saveProxyBtn.addEventListener('click', ()=>{
+  localStorage.setItem('proxy-url', proxyUrlInput.value.trim());
+  prefs.proxyUrl = proxyUrlInput.value.trim();
+  alert('Proxy URL saved');
+});
+clearProxyBtn.addEventListener('click', ()=>{
+  proxyUrlInput.value='';
+  localStorage.removeItem('proxy-url');
+  prefs.proxyUrl='';
+  alert('Proxy cleared');
+});
+
+/* restore proxy on load if active */
 window.addEventListener('load', ()=>{
-  const wasActive = localStorage.getItem('proxy-active') === '1';
-  const saved = localStorage.getItem('proxy-url') || '';
-  if(wasActive && saved){
-    setTimeout(()=> showProxy(saved), 120);
+  if(prefs.proxyActive && prefs.proxyUrl){
+    setTimeout(()=> showProxy(prefs.proxyUrl), 120);
   }
 });
 
-// Escape closes proxy
-document.addEventListener('keydown', (e)=> {
-  if(e.key === 'Escape' && proxyOverlay.style.display === 'flex'){
-    proxyBack.click();
-  }
-});
+/* ----------------- CLOCK ----------------- */
+function updateClock(){ const now = new Date(); qsel('#clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}` }
+setInterval(updateClock,1000); updateClock();
 
-/* ----------------- AUTH (signup/login) ----------------- */
-const showSignupBtn = document.getElementById('show-signup-btn');
-const showLoginBtn = document.getElementById('show-login-btn');
-const loginBtn = document.getElementById('login-btn');
-const createAccountBtn = document.getElementById('create-account-btn');
+/* ----------------- CLOAK overlay ----------------- */
+const cloakOverlay = qsel('#cloak-overlay');
+const cloakBtn = qsel('#cloak-btn');
+const cloakClose = qsel('#cloak-close');
+const cloakQuick = qsel('#cloak-quick');
 
-showSignupBtn.addEventListener('click', ()=>{ document.getElementById('login-screen').style.display='none'; document.getElementById('signup-screen').style.display='flex'; });
-showLoginBtn.addEventListener('click', ()=>{ document.getElementById('signup-screen').style.display='none'; document.getElementById('login-screen').style.display='flex'; });
+function openCloak(){
+  cloakOverlay.style.display='flex';
+}
+function closeCloak(){
+  cloakOverlay.style.display='none';
+}
+cloakBtn.addEventListener('click', openCloak);
+cloakClose.addEventListener('click', closeCloak);
+cloakQuick.addEventListener('click', ()=>{ openCloak(); setTimeout(()=>closeCloak(), 600); });
+
+/* ----------------- LOGIN / AUTH (client only) ----------------- */
+const loginScreen = qsel('#login-screen');
+const signupScreen = qsel('#signup-screen');
+const loginToggle = qsel('#login-toggle');
+const showSignupBtn = qsel('#show-signup');
+const backLoginBtn = qsel('#back-login');
+const loginBtn = qsel('#login-btn');
+const createAccountBtn = qsel('#create-account');
+
+loginToggle.addEventListener('click', ()=> { loginScreen.style.display='flex' });
+showSignupBtn.addEventListener('click', ()=> { loginScreen.style.display='none'; signupScreen.style.display='flex' });
+backLoginBtn.addEventListener('click', ()=> { signupScreen.style.display='none'; loginScreen.style.display='flex' });
 
 async function sha256hex(str){
-  const enc = new TextEncoder();
-  const data = enc.encode(str);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const arr = Array.from(new Uint8Array(hash));
-  return arr.map(b=>b.toString(16).padStart(2,'0')).join('');
+  const enc = new TextEncoder(); const data = enc.encode(str); const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-
 function getAccounts(){ return JSON.parse(localStorage.getItem('accounts')||'{}') }
 
 createAccountBtn.addEventListener('click', async ()=>{
-  const u = document.getElementById('signup-username').value.trim();
-  const p = document.getElementById('signup-password').value;
-  if(!u || !p){ document.getElementById('signup-error').textContent='Fill username & password'; document.getElementById('signup-error').style.display='block'; return; }
-  const accounts = getAccounts();
-  if(accounts[u]){ document.getElementById('signup-error').textContent='Username already exists'; document.getElementById('signup-error').style.display='block'; return; }
-  const hash = await sha256hex(p);
-  accounts[u] = hash;
-  localStorage.setItem('accounts', JSON.stringify(accounts));
-  document.getElementById('signup-error').style.display='none';
-  alert('Account created. Please login.');
-  document.getElementById('signup-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
+  const u = qsel('#signup-username').value.trim(); const p = qsel('#signup-password').value;
+  if(!u||!p){ qsel('#signup-error').textContent='Fill both fields'; qsel('#signup-error').style.display='block'; return; }
+  const accounts = getAccounts(); if(accounts[u]){ qsel('#signup-error').textContent='Username exists'; qsel('#signup-error').style.display='block'; return; }
+  const h = await sha256hex(p); accounts[u]=h; localStorage.setItem('accounts', JSON.stringify(accounts)); alert('Account created — login now'); signupScreen.style.display='none'; loginScreen.style.display='flex';
 });
 
 loginBtn.addEventListener('click', async ()=>{
-  const u = document.getElementById('login-username').value.trim();
-  const p = document.getElementById('login-password').value;
-  const accounts = getAccounts();
-  const hash = await sha256hex(p);
-  if(!accounts[u] || accounts[u] !== hash){ document.getElementById('login-error').style.display='block'; return; }
-  document.getElementById('login-error').style.display='none';
-  // store last-login for UI personalization and call grantAccess
-  localStorage.setItem('last-login', u);
+  const u = qsel('#login-username').value.trim(); const p = qsel('#login-password').value;
+  const accounts = getAccounts(); const h = await sha256hex(p);
+  if(!accounts[u] || accounts[u]!==h){ qsel('#login-error').textContent='Invalid'; qsel('#login-error').style.display='block'; return; }
+  qsel('#login-error').style.display='none';
+  loginScreen.style.display='none';
   grantAccess(u);
 });
 
-/* ----------------- applyLoggedInUI() - the "screenshot" look ----------------- */
-function applyLoggedInUI(){
-  document.body.classList.add('logged-in');
-
-  // animate the deploy button slightly
-  const d = document.getElementById('deploy-proxy-btn');
-  if(d){
-    d.animate([
-      { transform: 'translateX(-50%) scale(0.98)', boxShadow: '0 6px 18px rgba(0,0,0,0.3)' },
-      { transform: 'translateX(-50%) scale(1.02)', boxShadow: '0 12px 36px rgba(0,230,255,0.12)' },
-      { transform: 'translateX(-50%) scale(1)', boxShadow: '0 8px 28px rgba(0,0,0,0.4)' }
-    ], { duration: 900, iterations: 1, easing: 'ease-out' });
-  }
-
-  // set banner welcome using last-login
-  const last = localStorage.getItem('last-login') || '';
-  if(last){
-    document.getElementById('custom-banner').textContent = `WELCOME BACK — ${last.toUpperCase()}`;
-  }
-
-  // mark favorites visually
-  document.querySelectorAll('.favorite').forEach(el=>{
-    // find nearest card's filename (we constructed filenames to map)
-    const card = el.closest('.game-card');
-    if(!card) return;
-    const title = card.querySelector('div')?.textContent?.trim();
-    if(!title) return;
-    const fname = title.toLowerCase().replace(/\s+/g,'-') + '.html';
-    el.classList.toggle('active', prefs.favs.includes(fname));
-  });
-}
-
-/* ----------------- grantAccess (show ACCESS GRANTED and apply UI) ----------------- */
 function grantAccess(username){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('signup-screen').style.display='none';
-  document.getElementById('access-granted').style.display='flex';
-  // apply the logged-in UI immediately
-  applyLoggedInUI();
-  // hide the access message after a short moment
-  setTimeout(()=>{ document.getElementById('access-granted').style.display='none'; }, 1200);
+  qsel('#profile-name').textContent = username;
+  qsel('#avatar').textContent = username[0].toUpperCase();
+  qsel('#access-granted')?.remove?.(); // optional visual
 }
 
-/* ----------------- INIT ----------------- */
+/* ----------------- UI wiring ----------------- */
+qsel('#search-games').addEventListener('input', (e)=> renderGames(categoryFilter.value || '', e.target.value));
+categoryFilter.addEventListener('change', ()=> renderGames(categoryFilter.value || '', qsel('#search-games').value));
+qsel('#show-faves').addEventListener('click', ()=> { renderGames('__FAVS__'); });
+qsel('#clear-faves').addEventListener('click', ()=> { prefs.favs=[]; localStorage.setItem('pref-favs', JSON.stringify(prefs.favs)); renderGames(); renderFavList(); });
+
+/* ----------------- INIT render ----------------- */
 (function init(){
-  // apply prefs
-  document.documentElement.style.setProperty('--neon-blue', prefs.neon);
-  document.body.style.background = prefs.bg;
-  neonInput.value = prefs.neon; bgInput.value = prefs.bg;
-  bannerInput.value = prefs.banner; document.getElementById('custom-banner').textContent = prefs.banner;
-  gridSize.value = prefs.grid; applyGrid();
+  CATALOG = buildCatalog();
+  renderCategories();
   renderGames();
-
-  // If user already logged in previously, apply logged-in UI
-  const last = localStorage.getItem('last-login');
-  if(last) applyLoggedInUI();
+  renderFavList();
+  // insert categories to filter select already done in renderCategories()
+  // apply saved proxy url value
+  proxyUrlInput.value = prefs.proxyUrl || '';
 })();
-
-/* ----------------- Shortcuts ----------------- */
-document.addEventListener('keydown', (e)=>{ if(e.key==='f'){ renderGames('favs') } if(e.key==='/'){ searchInput.focus() } });
-
-/* ----------------- End of script ----------------- */
 </script>
 </body>
 </html>
